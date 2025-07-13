@@ -1,0 +1,3 @@
+employeeId,firstName,lastName,email,title,department,managerId
+1,Stong,Wilson,team@pallado.us,CEO,Executive,
+2,Rupert,Hanson,sdbrownlie@confusethemachine.com,Software Engineer,Engineering,1 

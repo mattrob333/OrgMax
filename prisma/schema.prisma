@@ -1,0 +1,130 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String @id @default(cuid())
+  clerkId      String @unique
+  email        String @unique
+  firstName    String?
+  lastName     String?
+  imageUrl     String?
+  role         Role   @default(USER)
+  customPrompt String?
+  personalityType PersonalityType @default(professional)
+  systemMessage String?
+  calendarConnected Boolean @default(false)
+  timezone String? @default("UTC")
+  
+  // Org chart fields
+  employeeId   String? @unique
+  title        String?
+  department   String?
+  managerId    String?
+  isExplicitRoot Boolean @default(false) // Track explicitly designated root nodes (managerId was '0' in CSV or manually set)
+  manager      User?   @relation("UserManager", fields: [managerId], references: [id])
+  directReports User[] @relation("UserManager")
+  
+  // Chat relationships
+  chatsAsUser     Chat[] @relation("UserChats")
+  chatsAsEmployee Chat[] @relation("EmployeeChats")
+  messages        Message[]
+  notifications   Notification[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@map("users")
+}
+
+model Chat {
+  id         String @id @default(cuid())
+  userId     String // The user initiating the chat
+  employeeId String // The employee being chatted with
+  
+  user     User @relation("UserChats", fields: [userId], references: [id])
+  employee User @relation("EmployeeChats", fields: [employeeId], references: [id])
+  
+  messages Message[]
+  notifications Notification[]
+  
+  // Session tracking
+  lastActivityAt DateTime @default(now())
+  isActive Boolean @default(true)
+  endedAt DateTime?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@unique([userId, employeeId])
+  @@map("chats")
+}
+
+model Message {
+  id      String @id @default(cuid())
+  chatId  String
+  userId  String
+  role    MessageRole
+  content String
+  
+  chat Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id])
+  
+  createdAt DateTime @default(now())
+  
+  @@map("messages")
+}
+
+model Notification {
+  id          String @id @default(cuid())
+  userId      String // The user who should receive the notification (employee being chatted with)
+  chatId      String // The chat that triggered this notification
+  type        NotificationType
+  title       String
+  message     String
+  isRead      Boolean @default(false)
+  
+  user User @relation(fields: [userId], references: [id])
+  chat Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  
+  @@map("notifications")
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+enum MessageRole {
+  user
+  assistant
+  system
+}
+
+enum PersonalityType {
+  professional
+  friendly
+  technical
+  creative
+  analytical
+  supportive
+  direct
+  mentor
+}
+
+enum NotificationType {
+  CHAT_STARTED
+  CHAT_ENDED
+  MEETING_BOOKED
+  CALENDAR_UPDATED
+} 
