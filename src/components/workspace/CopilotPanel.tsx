@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { useAppStore } from '@/lib/store'
-import { Send, X, FileText, CheckSquare, Paperclip, Trash2 } from 'lucide-react'
+import { Send, X, FileText, CheckSquare, Paperclip, Trash2, Upload } from 'lucide-react'
 import { useChat } from 'ai/react'
 import Markdown from 'react-markdown'
 
@@ -11,12 +11,15 @@ export function CopilotPanel() {
     copilotActiveTask,
     setCopilotActiveTask,
     copilotAttachedDocuments,
+    addCopilotDocument,
     removeCopilotDocument,
     clearCopilotContext,
   } = useAppStore()
 
   const [isDragOver, setIsDragOver] = useState(false)
+  const [dragType, setDragType] = useState<'task' | 'document' | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat({
     api: '/api/copilot',
@@ -33,32 +36,101 @@ export function CopilotPanel() {
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault()
     setIsDragOver(false)
+    setDragType(null)
 
     try {
       const data = e.dataTransfer.getData('application/json')
-      const task = JSON.parse(data)
+      const item = JSON.parse(data)
 
-      if (task && task.id) {
+      // Handle document drop
+      if (item.type === 'document') {
+        addCopilotDocument({
+          id: item.documentId,
+          fileName: item.fileName,
+          content: item.content || '',
+        })
+      }
+      // Handle task drop
+      else if (item.id && item.title) {
         setCopilotActiveTask({
-          id: task.id,
-          title: task.title,
-          description: task.description,
-          status: task.status,
-          priority: task.priority,
+          id: item.id,
+          title: item.title,
+          description: item.description,
+          status: item.status,
+          priority: item.priority,
         })
       }
     } catch (error) {
-      console.error('Failed to parse dropped task:', error)
+      console.error('Failed to parse dropped item:', error)
     }
   }
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault()
-    setIsDragOver(true)
+
+    try {
+      const dataType = e.dataTransfer.types.includes('application/json')
+      if (dataType && !isDragOver) {
+        // Try to peek at the data to determine type
+        // Note: getData doesn't work in dragover, so we'll show generic message
+        setIsDragOver(true)
+        setDragType(null) // We'll show a generic drop zone
+      }
+    } catch (error) {
+      setIsDragOver(true)
+      setDragType(null)
+    }
   }
 
   const handleDragLeave = () => {
     setIsDragOver(false)
+    setDragType(null)
+  }
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Validate file type
+    const fileName = file.name.toLowerCase()
+    const allowedExtensions = ['.txt', '.md', '.pdf', '.doc', '.docx']
+    const isValidType = allowedExtensions.some(ext => fileName.endsWith(ext))
+
+    if (!isValidType) {
+      alert('Please select a .txt, .md, .pdf, .doc, or .docx file')
+      return
+    }
+
+    // Validate file size (5MB max)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('File size must be less than 5MB')
+      return
+    }
+
+    try {
+      // Read file content
+      const content = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onload = (e) => resolve(e.target?.result as string)
+        reader.onerror = () => reject(new Error('Failed to read file'))
+        reader.readAsText(file)
+      })
+
+      // Add to copilot context
+      addCopilotDocument({
+        id: `local_${Date.now()}`,
+        fileName: file.name,
+        content,
+      })
+
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
+    } catch (error) {
+      console.error('File upload error:', error)
+      alert('Failed to upload file. Please try again.')
+    }
   }
 
   return (
@@ -138,8 +210,9 @@ export function CopilotPanel() {
         {isDragOver && (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
-              <CheckSquare className="w-12 h-12 text-purple-300 mx-auto mb-3" />
-              <p className="text-purple-300 font-medium">Drop task to add to context</p>
+              <Upload className="w-12 h-12 text-purple-300 mx-auto mb-3" />
+              <p className="text-purple-300 font-medium">Drop here to add to context</p>
+              <p className="text-sm text-gray-400 mt-2">Tasks or Documents</p>
             </div>
           </div>
         )}
@@ -201,10 +274,19 @@ export function CopilotPanel() {
       {/* Input */}
       <div className="p-4 border-t border-purple-500/20 bg-gray-900/70">
         <form onSubmit={handleSubmit} className="flex gap-2">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".txt,.md,.pdf,.doc,.docx"
+            onChange={handleFileUpload}
+            className="hidden"
+            id="copilot-file-upload"
+          />
           <button
             type="button"
+            onClick={() => fileInputRef.current?.click()}
             className="px-3 py-2 bg-gray-800 hover:bg-gray-700 border border-purple-500/20 text-gray-300 rounded-lg transition-colors"
-            title="Attach document (coming soon)"
+            title="Attach local document"
           >
             <Paperclip className="w-5 h-5" />
           </button>

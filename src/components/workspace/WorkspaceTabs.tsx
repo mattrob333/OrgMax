@@ -6,6 +6,7 @@ import { AdminStatus } from '@/lib/orgchart'
 import { OrgChart } from '@/components/OrgChart'
 import { CalendarView } from '@/components/CalendarView'
 import { TaskPanel } from '@/components/tasks/TaskPanel'
+import { DocumentLibrary } from '@/components/documents/DocumentLibrary'
 import { FEATURES } from '@/lib/feature-flags'
 
 interface WorkspaceTabsProps {
@@ -55,12 +56,16 @@ export function WorkspaceTabs({
       )}
 
       {workspaceLayout.activeTab === 'files' && (
-        <div className="h-full flex items-center justify-center">
-          <div className="text-center">
-            <h3 className="text-xl font-semibold text-white mb-2">Files Coming Soon</h3>
-            <p className="text-gray-400">Knowledge base will be available in Phase 3</p>
+        FEATURES.KNOWLEDGE_BASE ? (
+          <DocumentLibrary />
+        ) : (
+          <div className="h-full flex items-center justify-center">
+            <div className="text-center">
+              <h3 className="text-xl font-semibold text-white mb-2">Files Coming Soon</h3>
+              <p className="text-gray-400">Knowledge base will be available in Phase 3</p>
+            </div>
           </div>
-        </div>
+        )
       )}
     </div>
   )

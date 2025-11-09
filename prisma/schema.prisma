@@ -47,6 +47,10 @@ model User {
   tasksAssigned   Task[] @relation("TasksAssigned")
   taskComments    TaskComment[]
 
+  // Mention relationships
+  mentionsReceived TaskMention[] @relation("MentionsReceived")
+  mentionsMade     TaskMention[] @relation("MentionsMade")
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -138,22 +142,43 @@ enum NotificationType {
   TASK_ASSIGNED
   TASK_COMPLETED
   TASK_COMMENT
+  TASK_MENTIONED
+  DOCUMENT_SHARED
+  TASK_FROM_DOCUMENT
 }
 
 model Document {
   id          String @id @default(cuid())
   userId      String
+
+  // Document categorization
+  scope       DocumentScope @default(PERSONAL)
+  category    String?  // e.g., "Meeting Transcripts", "Initiatives", "Policies"
+
   fileName    String
-  fileType    String // 'txt' or 'md'
+  fileType    String // 'txt', 'md', 'pdf' (future)
   content     String @db.Text
-  metadata    Json?  // Optional metadata about the document
+  metadata    Json?  // { uploadedBy, fileSize, tags, source }
+
+  // AI-enhanced fields
+  summary     String?  @db.Text  // AI-generated summary
+  extractedEntities Json?       // AI-extracted: people, dates, action items
+
+  // Access control
+  isPublic    Boolean  @default(false)
+  sharedWith  String[] // Array of user IDs
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Relationships
+  tasks       TaskDocument[]  // Many-to-many with tasks
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([userId])
+  @@index([scope])
+  @@index([category])
   @@map("documents")
 }
 
@@ -168,10 +193,21 @@ model Task {
   createdById  String
   assignedToId String?
 
+  // AI & Source tracking
+  sourceType     TaskSourceType? @default(MANUAL)
+  sourceDocumentId String?       // If created from document
+  aiGenerated    Boolean @default(false)
+  aiContext      Json?           // Store AI reasoning/extraction data
+
+  // Enhanced metadata
+  tags           String[]        // Searchable tags
+
   createdBy   User @relation("TasksCreated", fields: [createdById], references: [id])
   assignedTo  User? @relation("TasksAssigned", fields: [assignedToId], references: [id])
 
   comments    TaskComment[]
+  documents   TaskDocument[]  // Many-to-many with documents
+  mentions    TaskMention[]   // Track @mentions in task
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -179,6 +215,7 @@ model Task {
   @@index([assignedToId])
   @@index([createdById])
   @@index([status])
+  @@index([sourceType])
   @@map("tasks")
 }
 
@@ -190,6 +227,7 @@ model TaskComment {
 
   task    Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
   user    User @relation(fields: [userId], references: [id])
+  mentions TaskMention[] // @mentions in this comment
 
   createdAt DateTime @default(now())
 
@@ -209,4 +247,68 @@ enum Priority {
   MEDIUM
   HIGH
   URGENT
+}
+
+model TaskDocument {
+  id         String   @id @default(cuid())
+  taskId     String
+  documentId String
+
+  // Relationship metadata
+  linkType   TaskDocLinkType @default(REFERENCE)
+  notes      String? @db.Text
+
+  task       Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  createdAt  DateTime @default(now())
+
+  @@unique([taskId, documentId])
+  @@index([taskId])
+  @@index([documentId])
+  @@map("task_documents")
+}
+
+model TaskMention {
+  id          String   @id @default(cuid())
+  taskId      String?  // Task being mentioned in
+  commentId   String?  // Or comment being mentioned in
+
+  mentionedUserId String  // User who was @mentioned
+  mentionedBy     String  // User who did the mentioning
+
+  context     String?  @db.Text  // Text around the mention
+  isRead      Boolean  @default(false)
+
+  task        Task?        @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  comment     TaskComment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  mentionedUser User @relation("MentionsReceived", fields: [mentionedUserId], references: [id])
+  mentioner     User @relation("MentionsMade", fields: [mentionedBy], references: [id])
+
+  createdAt   DateTime @default(now())
+
+  @@index([mentionedUserId])
+  @@index([taskId])
+  @@index([commentId])
+  @@map("task_mentions")
+}
+
+enum DocumentScope {
+  PERSONAL  // Only visible to creator
+  TEAM      // Visible to department/team
+  COMPANY   // Visible to all employees
+}
+
+enum TaskSourceType {
+  MANUAL       // Created manually by user
+  COPILOT      // Created via AI copilot
+  TRANSCRIPT   // Extracted from meeting transcript
+  DOCUMENT     // Extracted from document
+  EMAIL        // Future: from email
+}
+
+enum TaskDocLinkType {
+  REFERENCE    // Document referenced in task
+  SOURCE       // Task created FROM this document
+  ATTACHMENT   // Document attached for context
 } 
