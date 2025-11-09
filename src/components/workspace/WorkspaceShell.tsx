@@ -41,22 +41,22 @@ export function WorkspaceShell({ leftNav, mainContent, rightPanel }: WorkspaceSh
   }, [])
 
   return (
-    <div className="h-full flex flex-col">
-      <PanelGroup direction="horizontal" className="flex-1">
+    <div className="h-full min-h-0 flex flex-col">
+      <PanelGroup direction="horizontal" className="flex-1 min-h-0">
         {/* Left Navigation Sidebar */}
         <Panel
           ref={leftPanelRef}
           id="left-sidebar"
-          defaultSize={16}
-          minSize={12}
+          defaultSize={13}
+          minSize={10}
           maxSize={30}
           collapsible={true}
           collapsedSize={0}
           className={workspaceLayout.leftSidebarCollapsed ? '' : 'bg-gray-900/50 border-r border-purple-500/20'}
         >
           {!workspaceLayout.leftSidebarCollapsed && (
-            <div className="h-full flex flex-col">
-              <div className="flex-1 overflow-y-auto">
+            <div className="h-full min-h-0 flex flex-col">
+              <div className="flex-1 min-h-0 overflow-y-auto">
                 {leftNav}
               </div>
               <button
@@ -75,7 +75,7 @@ export function WorkspaceShell({ leftNav, mainContent, rightPanel }: WorkspaceSh
 
         {/* Main Content Area */}
         <Panel id="main-content">
-          <div className="h-full flex flex-col relative">
+          <div className="h-full min-h-0 flex flex-col relative">
             {workspaceLayout.leftSidebarCollapsed && (
               <button
                 onClick={toggleLeftSidebar}
@@ -103,12 +103,12 @@ export function WorkspaceShell({ leftNav, mainContent, rightPanel }: WorkspaceSh
               <div className="h-full w-full" />
             </PanelResizeHandle>
             <Panel
-              defaultSize={25}
-              minSize={20}
+              defaultSize={20}
+              minSize={16}
               maxSize={40}
               className="bg-gray-900/50 border-l border-purple-500/20"
             >
-              <div className="h-full flex flex-col">
+              <div className="h-full min-h-0 flex flex-col">
                 <button
                   onClick={toggleRightPanel}
                   className="p-2 border-b border-purple-500/20 hover:bg-purple-500/10 transition-colors"

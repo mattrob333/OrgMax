@@ -264,7 +264,7 @@ export function CopilotPanel() {
         onDrop={handleDrop}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
-        className={`flex-1 overflow-y-auto p-4 space-y-4 transition-all ${
+        className={`flex-1 min-h-0 overflow-y-auto p-4 space-y-4 transition-all ${
           isDragOver ? 'bg-purple-600/10 border-2 border-dashed border-purple-500/40' : ''
         }`}
       >

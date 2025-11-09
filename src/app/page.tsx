@@ -94,7 +94,7 @@ export default async function Dashboard() {
     <div className="h-screen flex flex-col">
       <Header />
       
-      <main className="flex-1 relative">
+      <main className="flex-1 min-h-0 overflow-hidden relative">
         <DashboardClient 
           employees={employees} 
           currentUserId={currentUser.id}
