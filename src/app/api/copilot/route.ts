@@ -242,7 +242,6 @@ The user is currently working on this task. Provide specific, actionable help re
                   type: 'TASK_ASSIGNED',
                   title: 'New task assigned',
                   message: `${user.firstName} assigned you: ${title}`,
-                  actionUrl: `/tasks/${task.id}`,
                 },
               })
             }
