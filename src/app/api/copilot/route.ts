@@ -11,6 +11,21 @@ import {
   extractEntities,
 } from '@/lib/ai-tools/document-analyzer'
 
+const MAX_DOCUMENT_CONTEXT_CHARS = 20000
+const MAX_GENERATION_TOKENS = 3500
+
+const formatDocumentForPrompt = (content: unknown) => {
+  if (typeof content !== 'string' || content.trim().length === 0) {
+    return 'No readable content provided.'
+  }
+
+  if (content.length <= MAX_DOCUMENT_CONTEXT_CHARS) {
+    return content
+  }
+
+  return `${content.slice(0, MAX_DOCUMENT_CONTEXT_CHARS)}\n...[truncated for prompt length]`
+}
+
 export async function POST(req: Request) {
   const { userId } = await auth()
   if (!userId) return new Response('Unauthorized', { status: 401 })
@@ -89,7 +104,7 @@ The user is currently working on this task. Provide specific, actionable help re
   if (attachedDocuments && attachedDocuments.length > 0) {
     systemPrompt += `\n\n**ATTACHED DOCUMENTS:**\n`
     attachedDocuments.forEach((doc: any) => {
-      systemPrompt += `\n--- ${doc.fileName} ---\n${doc.content}\n`
+      systemPrompt += `\n--- ${doc.fileName} ---\n${formatDocumentForPrompt(doc.content)}\n`
     })
     systemPrompt += `\nUse the information from these documents to provide more informed answers.`
   }
@@ -97,11 +112,12 @@ The user is currently working on this task. Provide specific, actionable help re
   // Using GPT-4o for better reasoning and tool calling (internet search via searchWeb tool)
   // Alternative: Could use Perplexity's sonar model with built-in internet search
   // by adding @ai-sdk/perplexity package and using: createPerplexity()('sonar')
-  const result = await streamText({
-    model: openai('gpt-4o'),
-    system: systemPrompt,
-    messages,
-    tools: {
+  try {
+    const result = await streamText({
+      model: openai('gpt-4o'),
+      system: systemPrompt,
+      messages,
+      tools: {
       searchWeb: {
         description: 'Search the internet for current information, news, research, or answers to questions',
         parameters: z.object({
@@ -445,10 +461,22 @@ The user is currently working on this task. Provide specific, actionable help re
           }
         },
       },
-    },
-    maxTokens: 1500,
-    temperature: 0.7,
-  })
+      },
+      maxTokens: MAX_GENERATION_TOKENS,
+      temperature: 0.7,
+    })
 
-  return result.toDataStreamResponse()
+    return result.toDataStreamResponse()
+  } catch (error) {
+    console.error('Copilot streaming error:', error)
+    return new Response(
+      JSON.stringify({
+        error: 'The copilot was unable to generate a response. Please try again or simplify the attached context.',
+      }),
+      {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      }
+    )
+  }
 }

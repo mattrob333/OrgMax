@@ -38,7 +38,7 @@ export function CopilotPanel() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  const handleDrop = (e: React.DragEvent) => {
+  const handleDrop = async (e: React.DragEvent) => {
     e.preventDefault()
     setIsDragOver(false)
     setDragType(null)
@@ -49,10 +49,30 @@ export function CopilotPanel() {
 
       // Handle document drop
       if (item.type === 'document') {
+        let content: string = item.content || ''
+
+        if (!content.trim() && item.documentId) {
+          try {
+            const response = await fetch(`/api/documents/${item.documentId}`)
+            if (response.ok) {
+              const data = await response.json()
+              content = data.document?.content || ''
+            } else {
+              console.error('Failed to fetch full document content:', response.statusText)
+            }
+          } catch (error) {
+            console.error('Error fetching document content:', error)
+          }
+        }
+
+        if (!content.trim()) {
+          content = 'Document content unavailable. Please open the document and copy the relevant text.'
+        }
+
         addCopilotDocument({
-          id: item.documentId,
+          id: item.documentId || `document_${Date.now()}`,
           fileName: item.fileName,
-          content: item.content || '',
+          content,
         })
       }
       // Handle task drop
