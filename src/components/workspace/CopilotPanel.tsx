@@ -5,6 +5,7 @@ import { useAppStore } from '@/lib/store'
 import { Send, X, FileText, CheckSquare, Paperclip, Trash2, Upload } from 'lucide-react'
 import { useChat } from 'ai/react'
 import Markdown from 'react-markdown'
+import { MentionAutocomplete } from '@/components/MentionAutocomplete'
 
 export function CopilotPanel() {
   const {
@@ -18,8 +19,12 @@ export function CopilotPanel() {
 
   const [isDragOver, setIsDragOver] = useState(false)
   const [dragType, setDragType] = useState<'task' | 'document' | null>(null)
+  const [mentionQuery, setMentionQuery] = useState('')
+  const [showMentions, setShowMentions] = useState(false)
+  const [mentionPosition, setMentionPosition] = useState({ top: 0, left: 0 })
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
 
   const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat({
     api: '/api/copilot',
@@ -131,6 +136,61 @@ export function CopilotPanel() {
       console.error('File upload error:', error)
       alert('Failed to upload file. Please try again.')
     }
+  }
+
+  const handleInputChangeWithMentions = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    handleInputChange(e)
+
+    // Detect @ mention
+    const cursorPos = e.target.selectionStart || 0
+    const textBeforeCursor = value.substring(0, cursorPos)
+    const lastAtIndex = textBeforeCursor.lastIndexOf('@')
+
+    if (lastAtIndex !== -1) {
+      const query = textBeforeCursor.substring(lastAtIndex + 1)
+      // Only show if @ is at start or preceded by whitespace
+      const charBeforeAt = textBeforeCursor[lastAtIndex - 1]
+      if (!charBeforeAt || /\s/.test(charBeforeAt)) {
+        setMentionQuery(query)
+        setShowMentions(true)
+
+        // Calculate position for dropdown
+        if (inputRef.current) {
+          const rect = inputRef.current.getBoundingClientRect()
+          setMentionPosition({
+            top: rect.top - 300, // Show above input
+            left: rect.left,
+          })
+        }
+      } else {
+        setShowMentions(false)
+      }
+    } else {
+      setShowMentions(false)
+    }
+  }
+
+  const handleMentionSelect = (email: string, name: string) => {
+    // Find the last @ and replace the query with the selected name
+    const cursorPos = inputRef.current?.selectionStart || 0
+    const textBeforeCursor = input.substring(0, cursorPos)
+    const lastAtIndex = textBeforeCursor.lastIndexOf('@')
+
+    if (lastAtIndex !== -1) {
+      const newValue =
+        input.substring(0, lastAtIndex) +
+        `@${name} ` +
+        input.substring(cursorPos)
+
+      // Update input using the event handler
+      const syntheticEvent = {
+        target: { value: newValue }
+      } as React.ChangeEvent<HTMLInputElement>
+      handleInputChange(syntheticEvent)
+    }
+
+    setShowMentions(false)
   }
 
   return (
@@ -291,9 +351,10 @@ export function CopilotPanel() {
             <Paperclip className="w-5 h-5" />
           </button>
           <input
+            ref={inputRef}
             type="text"
             value={input}
-            onChange={handleInputChange}
+            onChange={handleInputChangeWithMentions}
             placeholder={copilotActiveTask ? `Ask about "${copilotActiveTask.title}"...` : "Ask me anything..."}
             className="flex-1 px-4 py-2 bg-gray-800 border border-purple-500/20 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/40"
           />
@@ -306,6 +367,16 @@ export function CopilotPanel() {
           </button>
         </form>
       </div>
+
+      {/* Mention Autocomplete */}
+      {showMentions && (
+        <MentionAutocomplete
+          query={mentionQuery}
+          position={mentionPosition}
+          onSelect={handleMentionSelect}
+          onClose={() => setShowMentions(false)}
+        />
+      )}
     </div>
   )
 }
