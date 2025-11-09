@@ -13,7 +13,20 @@ export interface AdminStatus {
   needsFloatingNode: boolean
 }
 
-export function generateOrgChartData(employees: ExtendedUser[], adminStatus?: AdminStatus, currentUser?: ExtendedUser, onCalendarClick?: (user: ExtendedUser) => void, onConnectClick?: (user: ExtendedUser) => void, onEditClick?: (user: ExtendedUser) => void, onChatHistoryClick?: (user: ExtendedUser) => void, onRefresh?: () => Promise<void>, chattedEmployeeIds?: string[], onDocumentUpload?: (user: ExtendedUser) => void, employeeDocuments?: Record<string, boolean>): { nodes: Node<NodeData>[]; edges: Edge[] } {
+export function generateOrgChartData(
+  employees: ExtendedUser[],
+  adminStatus?: AdminStatus,
+  currentUser?: ExtendedUser,
+  onCalendarClick?: (user: ExtendedUser) => void,
+  onConnectClick?: (user: ExtendedUser) => void,
+  onEditClick?: (user: ExtendedUser) => void,
+  onChatHistoryClick?: (user: ExtendedUser) => void,
+  onRefresh?: () => Promise<void>,
+  chattedEmployeeIds?: string[],
+  onDocumentUpload?: (user: ExtendedUser) => void,
+  employeeDocuments?: Record<string, boolean>,
+  manualPositions?: Record<string, { x: number; y: number }>
+): { nodes: Node<NodeData>[]; edges: Edge[] } {
   const nodes: Node<NodeData>[] = []
   const edges: Edge[] = []
 
@@ -95,7 +108,24 @@ export function generateOrgChartData(employees: ExtendedUser[], adminStatus?: Ad
     }
     
     // Place the current node, centered at the provided x.
-    nodes.push(createNode(employee, parentCenterX - nodeWidth / 2, y, currentUser, onCalendarClick, onConnectClick, onEditClick, onChatHistoryClick, onRefresh, employeeMap, chattedEmployeeIds, onDocumentUpload, employeeDocuments))
+    nodes.push(
+      createNode(
+        employee,
+        parentCenterX - nodeWidth / 2,
+        y,
+        currentUser,
+        onCalendarClick,
+        onConnectClick,
+        onEditClick,
+        onChatHistoryClick,
+        onRefresh,
+        employeeMap,
+        chattedEmployeeIds,
+        onDocumentUpload,
+        employeeDocuments,
+        manualPositions
+      )
+    )
 
     if (children.length > 0) {
       const childrenTotalWidth = children.reduce((total, child) => {
@@ -132,23 +162,57 @@ export function generateOrgChartData(employees: ExtendedUser[], adminStatus?: Ad
     const adminX = ceoX + nodeWidth + adminNodeGap
     const adminY = ceoY
     
-    nodes.push(createAdminNode(adminEmployee, adminX, adminY, currentUser, onCalendarClick, onConnectClick, onEditClick, onChatHistoryClick, onRefresh, employeeMap, chattedEmployeeIds, onDocumentUpload, employeeDocuments))
+    nodes.push(
+      createAdminNode(
+        adminEmployee,
+        adminX,
+        adminY,
+        currentUser,
+        onCalendarClick,
+        onConnectClick,
+        onEditClick,
+        onChatHistoryClick,
+        onRefresh,
+        employeeMap,
+        chattedEmployeeIds,
+        onDocumentUpload,
+        employeeDocuments,
+        manualPositions
+      )
+    )
   }
 
   return { nodes, edges }
 }
 
-function createNode(employee: ExtendedUser, x: number, y: number, currentUser?: ExtendedUser, onCalendarClick?: (user: ExtendedUser) => void, onConnectClick?: (user: ExtendedUser) => void, onEditClick?: (user: ExtendedUser) => void, onChatHistoryClick?: (user: ExtendedUser) => void, onRefresh?: () => Promise<void>, employeeMap?: Map<string, ExtendedUser>, chattedEmployeeIds?: string[], onDocumentUpload?: (user: ExtendedUser) => void, employeeDocuments?: Record<string, boolean>): Node<NodeData> {
+function createNode(
+  employee: ExtendedUser,
+  x: number,
+  y: number,
+  currentUser?: ExtendedUser,
+  onCalendarClick?: (user: ExtendedUser) => void,
+  onConnectClick?: (user: ExtendedUser) => void,
+  onEditClick?: (user: ExtendedUser) => void,
+  onChatHistoryClick?: (user: ExtendedUser) => void,
+  onRefresh?: () => Promise<void>,
+  employeeMap?: Map<string, ExtendedUser>,
+  chattedEmployeeIds?: string[],
+  onDocumentUpload?: (user: ExtendedUser) => void,
+  employeeDocuments?: Record<string, boolean>,
+  manualPositions?: Record<string, { x: number; y: number }>
+): Node<NodeData> {
   // Check if this employee is truly unconnected (unknown status, not explicit root)
   // - If isExplicitRoot is true, they are intended root nodes (not unconnected)
   // - If managerId exists and is valid, they are connected
   // - Otherwise, they are unconnected (unknown status)
   const isUnconnected = !employee.isExplicitRoot && (!employee.managerId || (employeeMap && !employeeMap.has(employee.managerId)))
   
+  const overridePosition = manualPositions?.[employee.id]
+
   return {
     id: employee.id,
     type: 'employeeNode',
-    position: { x, y },
+    position: overridePosition ? { ...overridePosition } : { x, y },
     data: { 
       user: employee,
       isAdmin: (employee as any).isAdmin || false,
@@ -167,14 +231,31 @@ function createNode(employee: ExtendedUser, x: number, y: number, currentUser?: 
   }
 }
 
-function createAdminNode(adminUser: ExtendedUser, x: number, y: number, currentUser?: ExtendedUser, onCalendarClick?: (user: ExtendedUser) => void, onConnectClick?: (user: ExtendedUser) => void, onEditClick?: (user: ExtendedUser) => void, onChatHistoryClick?: (user: ExtendedUser) => void, onRefresh?: () => Promise<void>, employeeMap?: Map<string, ExtendedUser>, chattedEmployeeIds?: string[], onDocumentUpload?: (user: ExtendedUser) => void, employeeDocuments?: Record<string, boolean>): Node<NodeData> {
+function createAdminNode(
+  adminUser: ExtendedUser,
+  x: number,
+  y: number,
+  currentUser?: ExtendedUser,
+  onCalendarClick?: (user: ExtendedUser) => void,
+  onConnectClick?: (user: ExtendedUser) => void,
+  onEditClick?: (user: ExtendedUser) => void,
+  onChatHistoryClick?: (user: ExtendedUser) => void,
+  onRefresh?: () => Promise<void>,
+  employeeMap?: Map<string, ExtendedUser>,
+  chattedEmployeeIds?: string[],
+  onDocumentUpload?: (user: ExtendedUser) => void,
+  employeeDocuments?: Record<string, boolean>,
+  manualPositions?: Record<string, { x: number; y: number }>
+): Node<NodeData> {
   // Admin nodes are considered unconnected if they're floating and not explicit root
   const isUnconnected = !adminUser.isExplicitRoot && (!adminUser.managerId || (employeeMap && !employeeMap.has(adminUser.managerId)))
   
+  const overridePosition = manualPositions?.[`admin-${adminUser.id}`]
+
   return {
     id: `admin-${adminUser.id}`,
     type: 'employeeNode',
-    position: { x, y },
+    position: overridePosition ? { ...overridePosition } : { x, y },
     data: { 
       user: adminUser,
       isAdmin: true,

@@ -6,6 +6,7 @@ import ReactFlow, {
   Edge,
   addEdge,
   Connection,
+  NodeChange,
   useNodesState,
   useEdgesState,
   Controls,
@@ -21,6 +22,7 @@ import { DocumentUploadModal } from './DocumentUploadModal'
 import { generateOrgChartData, AdminStatus } from '@/lib/orgchart'
 import { ExtendedUser, NodeData } from '@/types'
 import { useAppStore } from '@/lib/store'
+import { Lock, Unlock, Save, RotateCcw } from 'lucide-react'
 
 const nodeTypes = {
   employeeNode: EmployeeNode,
@@ -57,6 +59,21 @@ export function OrgChart({ employees, adminStatus, currentUser, onCalendarClick,
 
   const setChatHistoryId = useAppStore(state => state.setChatHistoryId)
   const setIsChatHistoryModalOpen = useAppStore(state => state.setIsChatHistoryModalOpen)
+  const manualNodePositions = useAppStore(state => state.manualNodePositions)
+  const layoutHasUnsavedChanges = useAppStore(state => state.layoutHasUnsavedChanges)
+  const isLayoutLocked = useAppStore(state => state.isLayoutLocked)
+  const updateManualNodePosition = useAppStore(state => state.updateManualNodePosition)
+  const persistManualNodePositions = useAppStore(state => state.persistManualNodePositions)
+  const clearManualNodePositions = useAppStore(state => state.clearManualNodePositions)
+  const loadManualNodePositions = useAppStore(state => state.loadManualNodePositions)
+  const setIsLayoutLocked = useAppStore(state => state.setIsLayoutLocked)
+  const setManualNodePositions = useAppStore(state => state.setManualNodePositions)
+
+  const hasManualPositions = useMemo(
+    () => Object.keys(manualNodePositions).length > 0,
+    [manualNodePositions]
+  )
+  const canResetLayout = hasManualPositions || layoutHasUnsavedChanges
 
   const onConnect = useCallback(
     (params: Connection) => setEdges((eds) => addEdge(params, eds)),
@@ -175,6 +192,24 @@ export function OrgChart({ employees, adminStatus, currentUser, onCalendarClick,
     }
   }, [connectionModal.employee, onRefresh])
 
+  useEffect(() => {
+    loadManualNodePositions()
+  }, [loadManualNodePositions])
+
+  useEffect(() => {
+    if (!hasManualPositions) return
+
+    const validIds = new Set(employees.map(emp => emp.id))
+    if (adminStatus?.adminUser && adminStatus.needsFloatingNode) {
+      validIds.add(`admin-${adminStatus.adminUser.id}`)
+    }
+
+    const filteredEntries = Object.entries(manualNodePositions).filter(([id]) => validIds.has(id))
+    if (filteredEntries.length !== Object.keys(manualNodePositions).length) {
+      setManualNodePositions(Object.fromEntries(filteredEntries))
+    }
+  }, [employees, adminStatus, manualNodePositions, hasManualPositions, setManualNodePositions])
+
   // Fetch chat availability and document data when current user changes
   useEffect(() => {
     const fetchData = async () => {
@@ -216,19 +251,100 @@ export function OrgChart({ employees, adminStatus, currentUser, onCalendarClick,
 
   // Generate chart data when employees, adminStatus, or chat data change
   useEffect(() => {
-    const { nodes: newNodes, edges: newEdges } = generateOrgChartData(employees, adminStatus, currentUser, onCalendarClick, handleConnectClick, handleEditClick, handleChatHistoryClick, onRefresh, chattedEmployeeIds, handleDocumentUpload, employeeDocuments)
+    const { nodes: newNodes, edges: newEdges } = generateOrgChartData(
+      employees,
+      adminStatus,
+      currentUser,
+      onCalendarClick,
+      handleConnectClick,
+      handleEditClick,
+      handleChatHistoryClick,
+      onRefresh,
+      chattedEmployeeIds,
+      handleDocumentUpload,
+      employeeDocuments,
+      manualNodePositions
+    )
     setNodes(newNodes)
     setEdges(newEdges)
-  }, [employees, adminStatus, currentUser, onCalendarClick, handleConnectClick, handleEditClick, handleChatHistoryClick, onRefresh, chattedEmployeeIds, handleDocumentUpload, employeeDocuments, setNodes, setEdges])
+  }, [employees, adminStatus, currentUser, onCalendarClick, handleConnectClick, handleEditClick, handleChatHistoryClick, onRefresh, chattedEmployeeIds, handleDocumentUpload, employeeDocuments, manualNodePositions, setNodes, setEdges])
+
+  const handleNodesChange = useCallback((changes: NodeChange[]) => {
+    onNodesChange(changes)
+
+    if (isLayoutLocked) return
+
+    changes.forEach(change => {
+      if (change.type === 'position' && change.position) {
+        updateManualNodePosition(change.id, change.position)
+      }
+    })
+  }, [onNodesChange, isLayoutLocked, updateManualNodePosition])
+
+  const handleNodeDragStop = useCallback((_: unknown, node: Node<NodeData>) => {
+    if (isLayoutLocked) return
+    updateManualNodePosition(node.id, node.position)
+  }, [isLayoutLocked, updateManualNodePosition])
+
+  const handleToggleLock = useCallback(() => {
+    setIsLayoutLocked(!isLayoutLocked)
+  }, [isLayoutLocked, setIsLayoutLocked])
+
+  const handleSaveLayout = useCallback(() => {
+    persistManualNodePositions()
+  }, [persistManualNodePositions])
+
+  const handleResetLayout = useCallback(() => {
+    clearManualNodePositions()
+  }, [clearManualNodePositions])
 
   return (
-    <div className="w-full h-full">
+    <div className="relative w-full h-full">
+      <div className="absolute top-3 right-3 z-20 flex flex-col items-end gap-2">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleToggleLock}
+            className="flex items-center gap-1 rounded-md border border-purple-500/30 bg-gray-900/80 px-3 py-1.5 text-xs font-medium text-purple-100 transition hover:bg-purple-500/20"
+          >
+            {isLayoutLocked ? <Unlock className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
+            {isLayoutLocked ? 'Unlock Layout' : 'Lock Layout'}
+          </button>
+          <button
+            onClick={handleSaveLayout}
+            disabled={!layoutHasUnsavedChanges}
+            className={`flex items-center gap-1 rounded-md border border-emerald-500/30 px-3 py-1.5 text-xs font-medium transition ${layoutHasUnsavedChanges ? 'bg-emerald-600/20 text-emerald-100 hover:bg-emerald-500/30' : 'cursor-not-allowed bg-emerald-600/10 text-emerald-200/50'}`}
+          >
+            <Save className="w-4 h-4" />
+            Save Layout
+          </button>
+          <button
+            onClick={handleResetLayout}
+            disabled={!canResetLayout}
+            className={`flex items-center gap-1 rounded-md border border-slate-500/30 px-3 py-1.5 text-xs font-medium transition ${canResetLayout ? 'bg-slate-900/80 text-slate-100 hover:bg-slate-800/80' : 'cursor-not-allowed bg-slate-900/40 text-slate-300/40'}`}
+          >
+            <RotateCcw className="w-4 h-4" />
+            Reset Layout
+          </button>
+        </div>
+        {!isLayoutLocked && (
+          <div className="rounded-md border border-purple-500/30 bg-purple-500/10 px-2 py-1 text-xs text-purple-100">
+            Layout editing unlocked
+          </div>
+        )}
+        {layoutHasUnsavedChanges && (
+          <div className="rounded-md border border-yellow-500/30 bg-yellow-500/10 px-2 py-1 text-xs text-yellow-100">
+            Unsaved layout changes
+          </div>
+        )}
+      </div>
       <ReactFlow
         nodes={nodes}
         edges={edges}
-        onNodesChange={onNodesChange}
+        onNodesChange={handleNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
+        onNodeDragStop={handleNodeDragStop}
+        nodesDraggable={!isLayoutLocked}
         nodeTypes={nodeTypes}
         fitView
         fitViewOptions={{

@@ -1,6 +1,8 @@
 import { create } from 'zustand'
 import { ExtendedUser, NotificationWithChat } from '@/types'
 
+const MANUAL_LAYOUT_STORAGE_KEY = 'orgchart_manual_layout_v1'
+
 interface WorkspaceLayout {
   leftSidebarWidth: number
   rightPanelWidth: number
@@ -60,6 +62,17 @@ interface AppState {
   // Workspace state
   workspaceLayout: WorkspaceLayout
   setWorkspaceLayout: (layout: Partial<WorkspaceLayout>) => void
+
+  // Org chart layout persistence
+  manualNodePositions: Record<string, { x: number; y: number }>
+  layoutHasUnsavedChanges: boolean
+  isLayoutLocked: boolean
+  setManualNodePositions: (positions: Record<string, { x: number; y: number }>) => void
+  updateManualNodePosition: (id: string, position: { x: number; y: number }) => void
+  persistManualNodePositions: () => void
+  clearManualNodePositions: () => void
+  loadManualNodePositions: () => void
+  setIsLayoutLocked: (locked: boolean) => void
 }
 
 export const useAppStore = create<AppState>((set, get) => ({
@@ -126,4 +139,58 @@ export const useAppStore = create<AppState>((set, get) => ({
     set((state) => ({
       workspaceLayout: { ...state.workspaceLayout, ...layout },
     })),
-})) 
+
+  manualNodePositions: {},
+  layoutHasUnsavedChanges: false,
+  isLayoutLocked: true,
+  setManualNodePositions: (positions) =>
+    set({
+      manualNodePositions: { ...positions },
+      layoutHasUnsavedChanges: false,
+    }),
+  updateManualNodePosition: (id, position) =>
+    set((state) => {
+      const existing = state.manualNodePositions[id]
+      if (existing && existing.x === position.x && existing.y === position.y) {
+        return {}
+      }
+
+      return {
+        manualNodePositions: {
+          ...state.manualNodePositions,
+          [id]: { ...position },
+        },
+        layoutHasUnsavedChanges: true,
+      }
+    }),
+  persistManualNodePositions: () => {
+    const { manualNodePositions } = get()
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(
+        MANUAL_LAYOUT_STORAGE_KEY,
+        JSON.stringify(manualNodePositions)
+      )
+    }
+    set({ layoutHasUnsavedChanges: false })
+  },
+  clearManualNodePositions: () => {
+    if (typeof window !== 'undefined') {
+      window.localStorage.removeItem(MANUAL_LAYOUT_STORAGE_KEY)
+    }
+    set({ manualNodePositions: {}, layoutHasUnsavedChanges: false })
+  },
+  loadManualNodePositions: () => {
+    if (typeof window === 'undefined') return
+
+    try {
+      const stored = window.localStorage.getItem(MANUAL_LAYOUT_STORAGE_KEY)
+      if (stored) {
+        const parsed = JSON.parse(stored) as Record<string, { x: number; y: number }>
+        set({ manualNodePositions: parsed, layoutHasUnsavedChanges: false })
+      }
+    } catch (error) {
+      console.error('Failed to load org chart layout from storage:', error)
+    }
+  },
+  setIsLayoutLocked: (locked) => set({ isLayoutLocked: locked }),
+}))

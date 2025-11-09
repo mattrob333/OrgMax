@@ -24,6 +24,7 @@ export async function POST(req: Request) {
   const allEmployees = await db.user.findMany({
     where: { employeeId: { not: null } },
     select: {
+      id: true,
       firstName: true,
       lastName: true,
       title: true,
@@ -36,6 +37,24 @@ export async function POST(req: Request) {
   })
 
   // Build context-aware system prompt
+  const employeeById = new Map(allEmployees.map(emp => [emp.id, emp]))
+
+  const hierarchyLines = allEmployees.map(emp => {
+    const manager = emp.managerId ? employeeById.get(emp.managerId) : null
+    const directReports = allEmployees
+      .filter(child => child.managerId === emp.id)
+      .map(child => `${child.firstName} ${child.lastName}`)
+
+    const managerText = manager ? `${manager.firstName} ${manager.lastName} (${manager.title || 'Unknown'})` : 'No manager (top of org chart)'
+    const reportsText = directReports.length > 0 ? directReports.join(', ') : 'None'
+
+    return `- ${emp.firstName} ${emp.lastName} (${emp.title || 'N/A'})
+  • Email: ${emp.email}
+  • Department: ${emp.department || 'N/A'}
+  • Reports to: ${managerText}
+  • Direct reports: ${reportsText}`
+  }).join('\n\n')
+
   let systemPrompt = `You are an intelligent AI copilot assistant helping ${user.firstName} ${user.lastName} with their work.
 
 Your capabilities:
@@ -48,13 +67,12 @@ Your capabilities:
 
 Always be helpful, concise, and professional.
 
-**ORGANIZATION CHART:**
-You have access to the following team members:
+**ORGANIZATION CHART & REPORTING LINES:**
+Each employee record includes a managerId that defines who they report to. Use this data as the authoritative source when the user asks about reporting structure, chains of command, or team composition. Provide direct answers using the hierarchy below.
 
-${allEmployees.map(emp => `- ${emp.firstName} ${emp.lastName} (${emp.email}) - ${emp.title || 'N/A'}${emp.department ? `, Department: ${emp.department}` : ''}`).join('\n')}
+${hierarchyLines}
 
-When the user asks about the team, org chart, or specific employees, use this information.
-When creating tasks, you can assign them to any of these team members using their email address.`
+When creating tasks, you can assign them to any of these team members using their email address. When answering org questions, cite the reporting lines from this list.`
 
   // Add active task context
   if (activeTask) {
