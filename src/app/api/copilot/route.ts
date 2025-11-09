@@ -7,6 +7,8 @@ import {
   extractActionItems,
   parseTranscript,
   analyzeForTasks,
+  summarizeDocument,
+  extractEntities,
 } from '@/lib/ai-tools/document-analyzer'
 
 export async function POST(req: Request) {
@@ -273,67 +275,75 @@ The user is currently working on this task. Provide specific, actionable help re
         },
       },
       analyzeDocument: {
-        description: 'Analyze a document to extract action items, summary, and key entities',
+        description: 'Analyze a document to extract summaries and actionable insights',
         parameters: z.object({
           documentId: z.string().describe('ID of the document to analyze'),
           analysisType: z.enum(['summary', 'action_items', 'entities', 'full']).default('full').describe('Type of analysis to perform'),
         }),
         execute: async ({ documentId, analysisType }) => {
           try {
-            // Get document
-            const document = await db.document.findUnique({
-              where: { id: documentId },
-              include: {
-                user: {
-                  select: {
-                    department: true,
+            // Prefer cached summary when provided by the client payload.
+            let docContent = attachedDocuments?.find((doc: any) => doc.id === documentId)?.content
+
+            if (!docContent) {
+              const document = await db.document.findUnique({
+                where: { id: documentId },
+                include: {
+                  user: {
+                    select: {
+                      department: true,
+                    },
                   },
                 },
-              },
-            })
+              })
 
-            if (!document) {
-              return { success: false, error: 'Document not found' }
-            }
+              if (!document) {
+                return { success: false, error: 'Document not found' }
+              }
 
-            // Check access
-            const hasAccess =
-              document.userId === user.id ||
-              document.scope === 'COMPANY' ||
-              (document.scope === 'TEAM' && document.user.department === user.department) ||
-              document.sharedWith.includes(user.id)
+              const hasAccess =
+                document.userId === user.id ||
+                document.scope === 'COMPANY' ||
+                (document.scope === 'TEAM' && document.user.department === user.department) ||
+                document.sharedWith.includes(user.id)
 
-            if (!hasAccess) {
-              return { success: false, error: 'Access denied to this document' }
+              if (!hasAccess) {
+                return { success: false, error: 'Access denied to this document' }
+              }
+
+              docContent = document.content
             }
 
             const result: any = {
               documentId,
-              fileName: document.fileName,
             }
 
-            // Perform analysis
             switch (analysisType) {
               case 'summary':
-                result.summary = await analyzeForTasks(document.content, [])
+                result.summary = await summarizeDocument(docContent)
                 break
-
               case 'action_items':
-                result.actionItems = await extractActionItems(document.content)
+                result.actionItems = await extractActionItems(docContent)
                 break
-
+              case 'entities':
+                result.entities = await extractEntities(docContent)
+                break
               case 'full':
-                const [actionItems] = await Promise.all([
-                  extractActionItems(document.content),
+                const [summary, actionItems, entities] = await Promise.all([
+                  summarizeDocument(docContent),
+                  extractActionItems(docContent),
+                  extractEntities(docContent),
                 ])
+                result.summary = summary
                 result.actionItems = actionItems
+                result.entities = entities
                 break
             }
 
             return {
               success: true,
               ...result,
-              message: `Document analyzed successfully`,
+              message: 'Document analyzed successfully',
             }
           } catch (error) {
             console.error('Document analysis error:', error)
