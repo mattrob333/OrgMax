@@ -39,6 +39,9 @@ model User {
   messages        Message[]
   notifications   Notification[]
   
+  // RAG documents
+  documents       Document[]
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   
@@ -127,4 +130,21 @@ enum NotificationType {
   CHAT_ENDED
   MEETING_BOOKED
   CALENDAR_UPDATED
+}
+
+model Document {
+  id          String @id @default(cuid())
+  userId      String
+  fileName    String
+  fileType    String // 'txt' or 'md'
+  content     String @db.Text
+  metadata    Json?  // Optional metadata about the document
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([userId])
+  @@map("documents")
 } 

@@ -22,10 +22,13 @@ export async function POST(req: Request) {
     return new Response('Employee ID required', { status: 400 })
   }
 
-  // Get the current user and target employee with timezone info
+  // Get the current user and target employee with timezone info and documents
   const [currentUser, targetEmployee] = await Promise.all([
     db.user.findUnique({ where: { clerkId: userId } }),
-    db.user.findUnique({ where: { id: employeeId } }),
+    db.user.findUnique({ 
+      where: { id: employeeId },
+      include: { documents: true }
+    }),
   ])
 
   if (!currentUser || !targetEmployee) {
@@ -94,11 +97,27 @@ export async function POST(req: Request) {
   // Get personality template
   const personalityPrompt = getPersonalityPrompt(targetEmployee.personalityType || 'professional');
   
+  // Include document content if available
+  let documentContext = '';
+  if (targetEmployee.documents && targetEmployee.documents.length > 0) {
+    const doc = targetEmployee.documents[0]; // For now, we support one document per employee
+    documentContext = `
+
+REFERENCE DOCUMENTATION:
+The following documentation provides additional context about ${targetEmployee.firstName}'s role, responsibilities, and expertise:
+
+---
+${doc.content}
+---
+
+Use this documentation to provide more accurate and detailed responses about ${targetEmployee.firstName}'s work, projects, and areas of expertise.`;
+  }
+  
   const systemPrompt = `You are an AI assistant representing ${targetEmployee.firstName} ${targetEmployee.lastName}, who works as a ${targetEmployee.title} in the ${targetEmployee.department} department.
 
 PERSONALITY: ${personalityPrompt}
 
-CURRENT DATE AND TIME: ${currentDateFormatted} (${currentDateTime})
+CURRENT DATE AND TIME: ${currentDateFormatted} (${currentDateTime})${documentContext}
 
 You can help with:
 1. General conversation about work topics

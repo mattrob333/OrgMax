@@ -5,7 +5,7 @@ import Image from 'next/image'
 import { NodeData } from '@/types'
 import { useAppStore } from '@/lib/store'
 import { getInitials } from '@/lib/utils'
-import { User, Crown, Shield, Trash2, Link, Edit, MessageCircle } from 'lucide-react'
+import { User, Crown, Shield, Trash2, Link, Edit, MessageCircle, FileText, Upload } from 'lucide-react'
 import CalendarIcon from './ui/CalendarIcon'
 import { useState } from 'react'
 
@@ -14,15 +14,17 @@ interface EmployeeNodeProps {
     currentUserIsAdmin?: boolean
     currentUserId?: string
     hasChatHistory?: boolean
+    hasDocument?: boolean
     onCalendarClick?: (user: NodeData['user']) => void
     onConnectClick?: (user: NodeData['user']) => void
     onEditClick?: (user: NodeData['user']) => void
     onChatHistoryClick?: (user: NodeData['user']) => void
+    onDocumentUpload?: (user: NodeData['user']) => void
   }
 }
 
 export function EmployeeNode({ data }: EmployeeNodeProps) {
-  const { user, isAdmin, isFloatingAdmin, isUnconnected, currentUserIsAdmin, currentUserId, hasChatHistory, onCalendarClick, onConnectClick, onEditClick, onChatHistoryClick, onRefresh } = data
+  const { user, isAdmin, isFloatingAdmin, isUnconnected, currentUserIsAdmin, currentUserId, hasChatHistory, hasDocument, onCalendarClick, onConnectClick, onEditClick, onChatHistoryClick, onDocumentUpload, onRefresh } = data
   const setActiveChatUserId = useAppStore(state => state.setActiveChatUserId)
   const [isDeleting, setIsDeleting] = useState(false)
 
@@ -55,6 +57,13 @@ export function EmployeeNode({ data }: EmployeeNodeProps) {
     e.stopPropagation()
     if (onChatHistoryClick) {
       onChatHistoryClick(user)
+    }
+  }
+
+  const handleDocumentUpload = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (onDocumentUpload) {
+      onDocumentUpload(user)
     }
   }
 
@@ -197,6 +206,22 @@ export function EmployeeNode({ data }: EmployeeNodeProps) {
               title="Edit Employee Details"
             >
               <Edit className="w-4 h-4" />
+            </button>
+          </div>
+        )}
+
+        {/* Document Upload button - only visible for admins */}
+        {currentUserIsAdmin && (
+          <div className="absolute top-2 -right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+            <button
+              onClick={handleDocumentUpload}
+              className={`${hasDocument 
+                ? 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700' 
+                : 'bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700'
+              } text-white p-2 rounded-full shadow-lg transition-all duration-200 hover:scale-110`}
+              title={hasDocument ? "Update Document" : "Upload Document"}
+            >
+              {hasDocument ? <FileText className="w-4 h-4" /> : <Upload className="w-4 h-4" />}
             </button>
           </div>
         )}

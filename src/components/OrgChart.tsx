@@ -17,6 +17,7 @@ import 'reactflow/dist/style.css'
 import { EmployeeNode } from './EmployeeNode'
 import { ConnectionModal } from './ConnectionModal'
 import { EditEmployeeModal } from './EditEmployeeModal'
+import { DocumentUploadModal } from './DocumentUploadModal'
 import { generateOrgChartData, AdminStatus } from '@/lib/orgchart'
 import { ExtendedUser, NodeData } from '@/types'
 import { useAppStore } from '@/lib/store'
@@ -46,6 +47,13 @@ export function OrgChart({ employees, adminStatus, currentUser, onCalendarClick,
     isOpen: boolean
     employee: ExtendedUser | null
   }>({ isOpen: false, employee: null })
+  
+  const [documentModal, setDocumentModal] = useState<{
+    isOpen: boolean
+    employee: ExtendedUser | null
+  }>({ isOpen: false, employee: null })
+  
+  const [employeeDocuments, setEmployeeDocuments] = useState<Record<string, boolean>>({})
 
   const setChatHistoryId = useAppStore(state => state.setChatHistoryId)
   const setIsChatHistoryModalOpen = useAppStore(state => state.setIsChatHistoryModalOpen)
@@ -61,6 +69,10 @@ export function OrgChart({ employees, adminStatus, currentUser, onCalendarClick,
 
   const handleEditClick = useCallback((user: ExtendedUser) => {
     setEditModal({ isOpen: true, employee: user })
+  }, [])
+
+  const handleDocumentUpload = useCallback((user: ExtendedUser) => {
+    setDocumentModal({ isOpen: true, employee: user })
   }, [])
 
   const handleChatHistoryClick = useCallback(async (user: ExtendedUser) => {
@@ -94,6 +106,10 @@ export function OrgChart({ employees, adminStatus, currentUser, onCalendarClick,
 
   const handleEditModalClose = useCallback(() => {
     setEditModal({ isOpen: false, employee: null })
+  }, [])
+
+  const handleDocumentModalClose = useCallback(() => {
+    setDocumentModal({ isOpen: false, employee: null })
   }, [])
 
   const handleEmployeeUpdate = useCallback(async (userData: Partial<ExtendedUser>) => {
@@ -159,31 +175,51 @@ export function OrgChart({ employees, adminStatus, currentUser, onCalendarClick,
     }
   }, [connectionModal.employee, onRefresh])
 
-  // Fetch chat availability data when current user changes
+  // Fetch chat availability and document data when current user changes
   useEffect(() => {
-    const fetchChatAvailability = async () => {
+    const fetchData = async () => {
       if (!currentUser) return
 
       try {
-        const response = await fetch('/api/chat/availability')
-        if (response.ok) {
-          const data = await response.json()
+        // Fetch chat availability
+        const chatResponse = await fetch('/api/chat/availability')
+        if (chatResponse.ok) {
+          const data = await chatResponse.json()
           setChattedEmployeeIds(data.chattedEmployees.map((emp: any) => emp.employeeId))
         }
+
+        // Fetch document status for all employees (admin only)
+        if (currentUser.role === 'ADMIN') {
+          const docs: Record<string, boolean> = {}
+          for (const emp of employees) {
+            if (emp.employeeId) {
+              try {
+                const docResponse = await fetch(`/api/admin/upload-document?employeeId=${emp.employeeId}`)
+                if (docResponse.ok) {
+                  const docData = await docResponse.json()
+                  docs[emp.employeeId] = docData.hasDocument
+                }
+              } catch (err) {
+                console.error(`Error fetching document for ${emp.employeeId}:`, err)
+              }
+            }
+          }
+          setEmployeeDocuments(docs)
+        }
       } catch (error) {
-        console.error('Error fetching chat availability:', error)
+        console.error('Error fetching data:', error)
       }
     }
 
-    fetchChatAvailability()
-  }, [currentUser])
+    fetchData()
+  }, [currentUser, employees])
 
   // Generate chart data when employees, adminStatus, or chat data change
   useEffect(() => {
-    const { nodes: newNodes, edges: newEdges } = generateOrgChartData(employees, adminStatus, currentUser, onCalendarClick, handleConnectClick, handleEditClick, handleChatHistoryClick, onRefresh, chattedEmployeeIds)
+    const { nodes: newNodes, edges: newEdges } = generateOrgChartData(employees, adminStatus, currentUser, onCalendarClick, handleConnectClick, handleEditClick, handleChatHistoryClick, onRefresh, chattedEmployeeIds, handleDocumentUpload, employeeDocuments)
     setNodes(newNodes)
     setEdges(newEdges)
-  }, [employees, adminStatus, currentUser, onCalendarClick, handleConnectClick, handleEditClick, handleChatHistoryClick, onRefresh, chattedEmployeeIds, setNodes, setEdges])
+  }, [employees, adminStatus, currentUser, onCalendarClick, handleConnectClick, handleEditClick, handleChatHistoryClick, onRefresh, chattedEmployeeIds, handleDocumentUpload, employeeDocuments, setNodes, setEdges])
 
   return (
     <div className="w-full h-full">
@@ -232,6 +268,30 @@ export function OrgChart({ employees, adminStatus, currentUser, onCalendarClick,
           isOpen={editModal.isOpen}
           onClose={handleEditModalClose}
           onSave={handleEmployeeUpdate}
+        />
+      )}
+      
+      {documentModal.isOpen && documentModal.employee && (
+        <DocumentUploadModal
+          employee={documentModal.employee}
+          onClose={handleDocumentModalClose}
+          onUploadSuccess={async () => {
+            // Refresh document status
+            if (documentModal.employee?.employeeId) {
+              try {
+                const response = await fetch(`/api/admin/upload-document?employeeId=${documentModal.employee.employeeId}`)
+                if (response.ok) {
+                  const data = await response.json()
+                  setEmployeeDocuments(prev => ({
+                    ...prev,
+                    [documentModal.employee!.employeeId!]: data.hasDocument
+                  }))
+                }
+              } catch (error) {
+                console.error('Error refreshing document status:', error)
+              }
+            }
+          }}
         />
       )}
     </div>

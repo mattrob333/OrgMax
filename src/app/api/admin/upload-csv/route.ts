@@ -4,6 +4,7 @@ import { clerkClient } from '@clerk/nextjs/server'
 import { db } from '@/lib/db'
 import { z } from 'zod'
 import { EmployeeCSVRow } from '@/types'
+import { randomBytes } from 'crypto'
 
 const employeeSchema = z.object({
   employeeId: z.string().min(1),
@@ -76,44 +77,28 @@ export async function POST(req: NextRequest) {
 
     // Use a transaction to ensure data consistency
     const result = await db.$transaction(async (tx) => {
-      // Get all existing users to check for conflicts
+      // STEP 1: Clear all existing employee data to ensure clean slate
+      // This allows each CSV upload to be a complete replacement
+      await tx.user.updateMany({
+        where: { employeeId: { not: null } },
+        data: {
+          employeeId: null,
+          title: null,
+          department: null,
+          managerId: null,
+          isExplicitRoot: false
+        }
+      })
+
+      // Get all existing users (all employeeIds are now null after clearing)
       const existingUsers = await tx.user.findMany({
         select: { id: true, email: true, employeeId: true, clerkId: true }
       })
 
-      // Check for employeeId conflicts with users not in our CSV
-      const csvEmails = new Set(employees.map(emp => emp.email))
-      const conflictingUsers = existingUsers.filter(user => 
-        user.employeeId && 
-        csvEmployeeIds.includes(user.employeeId) && 
-        !csvEmails.has(user.email)
-      )
-
-      if (conflictingUsers.length > 0) {
-        const conflicts = conflictingUsers.map(user => 
-          `employeeId "${user.employeeId}" is already assigned to user with email "${user.email}"`
-        ).join('; ')
-        throw new Error(`EmployeeId conflicts detected: ${conflicts}`)
-      }
-
-      // Clear employeeId for any existing users whose emails are in the CSV
-      // but will get different employeeIds
-      for (const existingUser of existingUsers) {
-        if (existingUser.email && csvEmails.has(existingUser.email)) {
-          const csvEmployee = employees.find(emp => emp.email === existingUser.email)
-          if (csvEmployee && existingUser.employeeId && existingUser.employeeId !== csvEmployee.employeeId) {
-            await tx.user.update({
-              where: { id: existingUser.id },
-              data: { employeeId: null, managerId: null }
-            })
-          }
-        }
-      }
-
       const employeeMap: Record<string, string> = {} // employeeId -> db user id
       const newUsers: string[] = [] // Track emails of newly created users for invitations
 
-      // First pass: create / update users without manager links so all ids exist
+      // STEP 2: Create / update users without manager links so all ids exist first
       for (const emp of employees) {
         const existingUser = existingUsers.find(u => u.email === emp.email)
         const isNewUser = !existingUser || existingUser.clerkId.startsWith('temp_')
@@ -134,7 +119,7 @@ export async function POST(req: NextRequest) {
             systemMessage: emp.systemMessage,
           },
           create: {
-            clerkId: `temp_${emp.employeeId}`, // Temporary, will be updated on first sign-in
+            clerkId: `temp_${randomBytes(16).toString('hex')}`, // Unique temporary ID, will be updated on first sign-in
             employeeId: emp.employeeId,
             firstName: emp.firstName,
             lastName: emp.lastName,
@@ -149,7 +134,7 @@ export async function POST(req: NextRequest) {
         employeeMap[emp.employeeId] = upserted.id
       }
 
-      // Second pass: update manager links now that all users exist
+      // STEP 3: Update manager links now that all users exist
       for (const emp of employees) {
         const userId = employeeMap[emp.employeeId]
         if (!userId) continue; // Should not happen, but good practice
