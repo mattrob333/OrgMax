@@ -1,6 +1,6 @@
 import { requireAuth } from '@/lib/auth'
 import { Header } from '@/components/Header'
-import { SettingsForm } from './SettingsForm'
+import { SettingsForm } from '../SettingsForm'
 import { UserProfile } from '@clerk/nextjs'
 
 export default async function SettingsPage() {
@@ -9,7 +9,7 @@ export default async function SettingsPage() {
   return (
     <div className="h-screen flex flex-col">
       <Header />
-      
+
       <main className="flex-1 p-6">
         <div className="max-w-2xl mx-auto">
           <div className="mb-8">
@@ -19,15 +19,15 @@ export default async function SettingsPage() {
               Blessed by the Orb of Ultimate Chaos 🟣
             </div>
           </div>
-          
+
           <SettingsForm user={user} />
-          
+
           <div className="mt-12">
             <h2 className="text-2xl font-bold text-white mb-4">Account & Connections</h2>
             <p className="text-gray-400 mb-6">
               Manage your account settings and connect social accounts for enhanced features
             </p>
-            
+
             <div className="bg-gray-800/50 backdrop-blur-sm border border-purple-500/20 rounded-lg p-6">
               <UserProfile
                 additionalOAuthScopes={{
@@ -46,4 +46,4 @@ export default async function SettingsPage() {
       </main>
     </div>
   )
-} 
+}

@@ -11,6 +11,13 @@ import { AdminStatus } from '@/lib/orgchart'
 import { Card } from '@/components/ui/Card'
 import { useRequireScope } from '@/lib/use-require-scope'
 import { Users, Calendar } from 'lucide-react'
+import { FEATURES } from '@/lib/feature-flags'
+
+// Workspace components
+import { WorkspaceShell } from '@/components/workspace/WorkspaceShell'
+import { LeftNav } from '@/components/workspace/LeftNav'
+import { WorkspaceTabs } from '@/components/workspace/WorkspaceTabs'
+import { CopilotPanel } from '@/components/workspace/CopilotPanel'
 
 interface DashboardClientProps {
   employees: ExtendedUser[]
@@ -202,6 +209,36 @@ export function DashboardClient({ employees, currentUserId, adminStatus, current
     );
   }
 
+  // NEW: Use workspace shell if feature flag enabled
+  if (FEATURES.WORKSPACE_MODE) {
+    return (
+      <>
+        <WorkspaceShell
+          leftNav={<LeftNav />}
+          mainContent={
+            <WorkspaceTabs
+              employees={employeeData}
+              adminStatus={adminStatus}
+              currentUser={currentUser}
+              onCalendarClick={handleCalendarClick}
+              onRefresh={refreshEmployeeData}
+            />
+          }
+          rightPanel={<CopilotPanel />}
+        />
+
+        <ChatPanel />
+
+        <ChatHistoryModal
+          chatId={chatHistoryId}
+          isOpen={isChatHistoryModalOpen}
+          onClose={() => setIsChatHistoryModalOpen(false)}
+        />
+      </>
+    )
+  }
+
+  // EXISTING: Keep old UI for backward compatibility
   return (
     <div className="flex h-full">
       {/* Main content area */}

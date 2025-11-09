@@ -41,10 +41,15 @@ model User {
   
   // RAG documents
   documents       Document[]
-  
+
+  // Task relationships
+  tasksCreated    Task[] @relation("TasksCreated")
+  tasksAssigned   Task[] @relation("TasksAssigned")
+  taskComments    TaskComment[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   @@map("users")
 }
 
@@ -89,17 +94,17 @@ model Message {
 model Notification {
   id          String @id @default(cuid())
   userId      String // The user who should receive the notification (employee being chatted with)
-  chatId      String // The chat that triggered this notification
+  chatId      String? // The chat that triggered this notification (optional for task notifications)
   type        NotificationType
   title       String
   message     String
   isRead      Boolean @default(false)
-  
+
   user User @relation(fields: [userId], references: [id])
-  chat Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
-  
+  chat Chat? @relation(fields: [chatId], references: [id], onDelete: Cascade)
+
   createdAt DateTime @default(now())
-  
+
   @@map("notifications")
 }
 
@@ -130,6 +135,9 @@ enum NotificationType {
   CHAT_ENDED
   MEETING_BOOKED
   CALENDAR_UPDATED
+  TASK_ASSIGNED
+  TASK_COMPLETED
+  TASK_COMMENT
 }
 
 model Document {
@@ -139,12 +147,66 @@ model Document {
   fileType    String // 'txt' or 'md'
   content     String @db.Text
   metadata    Json?  // Optional metadata about the document
-  
+
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   @@index([userId])
   @@map("documents")
+}
+
+model Task {
+  id          String     @id @default(cuid())
+  title       String
+  description String?    @db.Text
+  status      TaskStatus @default(TODO)
+  priority    Priority   @default(MEDIUM)
+  dueDate     DateTime?
+
+  createdById  String
+  assignedToId String?
+
+  createdBy   User @relation("TasksCreated", fields: [createdById], references: [id])
+  assignedTo  User? @relation("TasksAssigned", fields: [assignedToId], references: [id])
+
+  comments    TaskComment[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([assignedToId])
+  @@index([createdById])
+  @@index([status])
+  @@map("tasks")
+}
+
+model TaskComment {
+  id      String @id @default(cuid())
+  taskId  String
+  userId  String
+  content String @db.Text
+
+  task    Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user    User @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@index([taskId])
+  @@map("task_comments")
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  REVIEW
+  DONE
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
 } 
