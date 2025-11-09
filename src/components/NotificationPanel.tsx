@@ -67,7 +67,9 @@ const NotificationItem = ({ notification, onMarkRead, onChatOpen }: Notification
       onMarkRead(notification.id)
     }
     // Open chat with the user who triggered the notification
-    onChatOpen(notification.chatId)
+    if (notification.chatId) {
+      onChatOpen(notification.chatId)
+    }
   }
 
   return (

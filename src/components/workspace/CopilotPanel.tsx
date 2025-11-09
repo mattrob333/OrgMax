@@ -178,9 +178,10 @@ export function CopilotPanel() {
     const lastAtIndex = textBeforeCursor.lastIndexOf('@')
 
     if (lastAtIndex !== -1) {
+      const mentionText = `@${name} <${email}> `
       const newValue =
         input.substring(0, lastAtIndex) +
-        `@${name} ` +
+        mentionText +
         input.substring(cursorPos)
 
       // Update input using the event handler

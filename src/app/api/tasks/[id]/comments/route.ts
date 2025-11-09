@@ -62,7 +62,7 @@ export async function POST(
     const notifyUserIds = new Set([task.createdById, task.assignedToId].filter(Boolean))
     notifyUserIds.delete(user.id) // Don't notify self
 
-    for (const notifyUserId of notifyUserIds) {
+    for (const notifyUserId of Array.from(notifyUserIds)) {
       await db.notification.create({
         data: {
           userId: notifyUserId!,

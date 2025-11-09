@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { X, Upload, FileText, Trash2 } from 'lucide-react'
 import { User } from '@/types'
 
@@ -18,7 +18,7 @@ export function DocumentUploadModal({ employee, onClose, onUploadSuccess }: Docu
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Load existing document on mount
-  useState(() => {
+  useEffect(() => {
     if (employee?.employeeId) {
       fetch(`/api/admin/upload-document?employeeId=${employee.employeeId}`)
         .then(res => res.json())

@@ -14,7 +14,7 @@ interface WorkspaceTabsProps {
   adminStatus: AdminStatus
   currentUser?: ExtendedUser
   onCalendarClick: (user: ExtendedUser) => void
-  onRefresh: () => void
+  onRefresh: () => Promise<void>
 }
 
 export function WorkspaceTabs({

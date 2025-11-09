@@ -28,10 +28,12 @@ export interface NodeData {
   currentUserIsAdmin?: boolean
   currentUserId?: string
   hasChatHistory?: boolean // Added for chat history feature
+  hasDocument?: boolean // Added for document upload feature
   onCalendarClick?: (user: ExtendedUser) => void
   onConnectClick?: (user: ExtendedUser) => void // Added for connecting nodes
   onEditClick?: (user: ExtendedUser) => void // Added for editing node details (admin-only)
   onChatHistoryClick?: (user: ExtendedUser) => void // Added for chat history access
+  onDocumentUpload?: (user: ExtendedUser) => void // Added for document upload
   onRefresh?: () => Promise<void> // Added for refreshing data after changes
 }
 

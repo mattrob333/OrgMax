@@ -22,7 +22,7 @@ export function LeftNav() {
       {NAV_ITEMS.map((item) => {
         const Icon = item.icon
         const isActive = workspaceLayout.activeTab === item.id
-        const isComingSoon = item.featureFlag ? !FEATURES[item.featureFlag as keyof typeof FEATURES] : false
+        const isComingSoon = 'featureFlag' in item && item.featureFlag ? !FEATURES[item.featureFlag as keyof typeof FEATURES] : false
 
         return (
           <button

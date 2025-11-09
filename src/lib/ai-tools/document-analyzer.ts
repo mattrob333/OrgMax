@@ -165,7 +165,7 @@ export async function analyzeForTasks(
         description: z.string().optional(),
         assigneeEmail: z.string().email().optional(),
         priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']),
-        dueDate: z.string().optional().nullable(),
+        dueDate: z.string().optional(),
         reasoning: z.string().optional(),
       })),
     })
