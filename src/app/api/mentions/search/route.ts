@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
     if (!user) return new NextResponse('User not found', { status: 404 })
 
     const { searchParams } = new URL(req.url)
-    const query = searchParams.get('q') || ''
+    const query = (searchParams.get('q') || '').trim()
     const context = searchParams.get('context') || 'task' // task, chat, comment
 
     if (!query || query.length < 1) {
@@ -41,7 +41,7 @@ export async function GET(req: NextRequest) {
         imageUrl: true,
         department: true,
       },
-      take: 10, // Limit to 10 results for dropdown
+      take: 50, // Return a larger slice so names like "Nate" aren't truncated out
       orderBy: [
         { firstName: 'asc' },
         { lastName: 'asc' },
