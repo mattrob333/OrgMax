@@ -47,8 +47,8 @@ export function WorkspaceShell({ leftNav, mainContent, rightPanel }: WorkspaceSh
         <Panel
           ref={leftPanelRef}
           id="left-sidebar"
-          defaultSize={13}
-          minSize={10}
+          defaultSize={12}
+          minSize={12}
           maxSize={30}
           collapsible={true}
           collapsedSize={0}
@@ -104,7 +104,7 @@ export function WorkspaceShell({ leftNav, mainContent, rightPanel }: WorkspaceSh
             </PanelResizeHandle>
             <Panel
               defaultSize={20}
-              minSize={16}
+              minSize={20}
               maxSize={40}
               className="bg-gray-900/50 border-l border-purple-500/20"
             >
