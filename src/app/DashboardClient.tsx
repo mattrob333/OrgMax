@@ -212,7 +212,7 @@ export function DashboardClient({ employees, currentUserId, adminStatus, current
   // NEW: Use workspace shell if feature flag enabled
   if (FEATURES.WORKSPACE_MODE) {
     return (
-      <>
+      <div className="h-screen flex flex-col overflow-hidden">
         <WorkspaceShell
           leftNav={<LeftNav />}
           mainContent={
@@ -234,7 +234,7 @@ export function DashboardClient({ employees, currentUserId, adminStatus, current
           isOpen={isChatHistoryModalOpen}
           onClose={() => setIsChatHistoryModalOpen(false)}
         />
-      </>
+      </div>
     )
   }
 
