@@ -115,7 +115,7 @@ export function WorkspaceShell({ leftNav, mainContent, rightPanel }: WorkspaceSh
                 >
                   <ChevronRight className="w-4 h-4 text-purple-300" />
                 </button>
-                <div className="flex-1 overflow-y-auto">
+                <div className="flex-1 min-h-0">
                   {rightPanel}
                 </div>
               </div>

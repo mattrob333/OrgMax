@@ -23,7 +23,8 @@ body {
   font-family: 'Inter', sans-serif;
   background: #0f172a;
   color: white;
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
 }
 
 /* Custom scrollbar for that divine touch */
