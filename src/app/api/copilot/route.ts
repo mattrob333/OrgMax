@@ -18,6 +18,21 @@ export async function POST(req: Request) {
 
   const { messages, activeTask, attachedDocuments } = await req.json()
 
+  // Get all employees for org chart context
+  const allEmployees = await db.user.findMany({
+    where: { employeeId: { not: null } },
+    select: {
+      firstName: true,
+      lastName: true,
+      title: true,
+      department: true,
+      email: true,
+      employeeId: true,
+      managerId: true,
+    },
+    orderBy: { firstName: 'asc' },
+  })
+
   // Build context-aware system prompt
   let systemPrompt = `You are an intelligent AI copilot assistant helping ${user.firstName} ${user.lastName} with their work.
 
@@ -26,8 +41,18 @@ Your capabilities:
 - Help with task planning and execution
 - Provide research assistance
 - Answer questions and solve problems
+- Create tasks and assign them to team members
+- Analyze documents and extract action items
 
-Always be helpful, concise, and professional.`
+Always be helpful, concise, and professional.
+
+**ORGANIZATION CHART:**
+You have access to the following team members:
+
+${allEmployees.map(emp => `- ${emp.firstName} ${emp.lastName} (${emp.email}) - ${emp.title || 'N/A'}${emp.department ? `, Department: ${emp.department}` : ''}`).join('\n')}
+
+When the user asks about the team, org chart, or specific employees, use this information.
+When creating tasks, you can assign them to any of these team members using their email address.`
 
   // Add active task context
   if (activeTask) {
