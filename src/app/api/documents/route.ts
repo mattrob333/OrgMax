@@ -5,11 +5,14 @@ import { z } from 'zod'
 
 // GET /api/documents - List documents with filters
 export async function GET(req: NextRequest) {
+  console.log('[/api/documents] GET request received')
   try {
     const { userId } = await auth()
+    console.log('[/api/documents] userId:', userId)
     if (!userId) return new NextResponse('Unauthorized', { status: 401 })
 
     const user = await db.user.findUnique({ where: { clerkId: userId } })
+    console.log('[/api/documents] user:', user?.id)
     if (!user) return new NextResponse('User not found', { status: 404 })
 
     // Parse query parameters
@@ -95,8 +98,11 @@ export async function GET(req: NextRequest) {
       hasMore: total > page * limit,
     })
   } catch (error) {
-    console.error('Document list error:', error)
-    return new NextResponse('Internal server error', { status: 500 })
+    console.error('[/api/documents] Error:', error)
+    return new NextResponse(JSON.stringify({ error: 'Internal server error', details: error instanceof Error ? error.message : 'Unknown error' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    })
   }
 }
 

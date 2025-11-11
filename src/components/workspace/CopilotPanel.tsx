@@ -215,16 +215,16 @@ export function CopilotPanel() {
   }
 
   return (
-    <div className="h-full min-h-0 flex flex-col bg-gray-900/50">
+    <div className="h-full min-h-0 flex flex-col border-l border-purple-500/20 bg-gray-900/40 text-sm">
       {/* Header */}
-      <div className="p-4 border-b border-purple-500/20 bg-gray-900/70">
-        <h2 className="text-xl font-semibold text-white">AI Copilot</h2>
+      <div className="px-3 py-3 sm:p-4 border-b border-purple-500/20 bg-gray-900/70 backdrop-blur">
+        <h2 className="text-lg font-semibold text-white sm:text-xl">AI Copilot</h2>
         <p className="text-xs text-gray-400 mt-1">Your intelligent assistant</p>
       </div>
 
       {/* Context Bar */}
       {(copilotActiveTask || copilotAttachedDocuments.length > 0) && (
-        <div className="p-3 bg-purple-600/10 border-b border-purple-500/20">
+        <div className="px-3 py-2.5 sm:p-3 bg-purple-600/10 border-b border-purple-500/20">
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-xs font-semibold text-purple-300 uppercase">Working Context</h3>
             <button
@@ -261,7 +261,7 @@ export function CopilotPanel() {
 
           {/* Attached Documents */}
           {copilotAttachedDocuments.map((doc) => (
-            <div key={doc.id} className="bg-gray-900/50 rounded-lg p-2 border border-purple-500/20 mb-2 last:mb-0">
+            <div key={doc.id} className="bg-gray-900/50 rounded-lg px-3 py-2 border border-purple-500/20 mb-2 last:mb-0">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <FileText className="w-4 h-4 text-purple-300" />
@@ -284,7 +284,7 @@ export function CopilotPanel() {
         onDrop={handleDrop}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
-        className={`flex-1 overflow-y-auto p-4 space-y-4 transition-all ${
+        className={`flex-1 overflow-y-auto px-3 py-4 sm:p-4 space-y-3 sm:space-y-4 transition-all ${
           isDragOver ? 'bg-purple-600/10 border-2 border-dashed border-purple-500/40' : ''
         }`}
       >
@@ -299,9 +299,9 @@ export function CopilotPanel() {
         )}
 
         {!isDragOver && messages.length === 0 && (
-          <div className="flex items-center justify-center h-full">
+          <div className="flex items-center justify-center h-full px-2">
             <div className="text-center max-w-sm">
-              <h3 className="text-lg font-semibold text-white mb-2">Welcome to AI Copilot</h3>
+              <h3 className="text-base font-semibold text-white sm:text-lg mb-2">Welcome to AI Copilot</h3>
               <p className="text-sm text-gray-400 mb-4">
                 Drag a task here to get started, or ask me anything about your work.
               </p>
@@ -353,38 +353,43 @@ export function CopilotPanel() {
       </div>
 
       {/* Input */}
-      <div className="p-4 border-t border-purple-500/20 bg-gray-900/70">
-        <form onSubmit={handleSubmit} className="flex gap-2">
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".txt,.md,.pdf,.doc,.docx"
-            onChange={handleFileUpload}
-            className="hidden"
-            id="copilot-file-upload"
-          />
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            className="px-3 py-2 bg-gray-800 hover:bg-gray-700 border border-purple-500/20 text-gray-300 rounded-lg transition-colors"
-            title="Attach local document"
-          >
-            <Paperclip className="w-5 h-5" />
-          </button>
-          <input
-            ref={inputRef}
-            type="text"
-            value={input}
-            onChange={handleInputChangeWithMentions}
-            placeholder={copilotActiveTask ? `Ask about "${copilotActiveTask.title}"...` : "Ask me anything..."}
-            className="flex-1 px-4 py-2 bg-gray-800 border border-purple-500/20 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/40"
-          />
+      <div className="px-3 py-3 sm:p-4 border-t border-purple-500/20 bg-gray-900/70 backdrop-blur">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <div className="flex items-center gap-2 sm:flex-1">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".txt,.md,.pdf,.doc,.docx"
+              onChange={handleFileUpload}
+              className="hidden"
+              id="copilot-file-upload"
+            />
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="shrink-0 rounded-lg border border-purple-500/20 bg-gray-800 px-2 py-2 text-gray-300 transition-colors hover:bg-gray-700 sm:px-3"
+              title="Attach local document"
+            >
+              <Paperclip className="w-5 h-5" />
+            </button>
+            <input
+              ref={inputRef}
+              type="text"
+              value={input}
+              onChange={handleInputChangeWithMentions}
+              placeholder={copilotActiveTask ? `Ask about "${copilotActiveTask.title}"...` : 'Ask me anything...'}
+              className="flex-1 min-w-0 rounded-lg border border-purple-500/20 bg-gray-800 px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/40 sm:px-4"
+            />
+          </div>
           <button
             type="submit"
             disabled={isLoading || !input.trim()}
-            className="px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg transition-colors flex items-center gap-2 font-medium"
+            className="w-full shrink-0 rounded-lg bg-purple-600 px-3 py-2 text-white transition-colors hover:bg-purple-700 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto sm:px-4"
           >
-            <Send className="w-5 h-5" />
+            <div className="flex items-center justify-center gap-2">
+              <Send className="w-5 h-5" />
+              <span className="text-sm font-medium sm:hidden">Send</span>
+            </div>
           </button>
         </form>
       </div>

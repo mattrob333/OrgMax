@@ -13,11 +13,14 @@ const createTaskSchema = z.object({
 
 // GET /api/tasks - List tasks
 export async function GET(req: NextRequest) {
+  console.log('[/api/tasks] GET request received')
   try {
     const { userId } = await auth()
+    console.log('[/api/tasks] userId:', userId)
     if (!userId) return new NextResponse('Unauthorized', { status: 401 })
 
     const user = await db.user.findUnique({ where: { clerkId: userId } })
+    console.log('[/api/tasks] user:', user?.id)
     if (!user) return new NextResponse('User not found', { status: 404 })
 
     const { searchParams } = new URL(req.url)
@@ -79,8 +82,11 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ tasks })
   } catch (error) {
-    console.error('Tasks fetch error:', error)
-    return new NextResponse('Internal server error', { status: 500 })
+    console.error('[/api/tasks] Error:', error)
+    return new NextResponse(JSON.stringify({ error: 'Internal server error', details: error instanceof Error ? error.message : 'Unknown error' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    })
   }
 }
 

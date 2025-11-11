@@ -349,11 +349,11 @@ export function OrgChart({ employees, adminStatus, currentUser, onCalendarClick,
         fitView
         fitViewOptions={{
           padding: 0.4,
-          minZoom: 0.5,
+          minZoom: 0.25,
           maxZoom: 1.5,
         }}
         defaultViewport={{ x: 0, y: 0, zoom: 1 }}
-        minZoom={0.5}
+        minZoom={0.25}
         maxZoom={2}
         className="bg-gradient-to-br from-slate-900 to-slate-800"
       >
