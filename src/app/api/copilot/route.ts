@@ -79,6 +79,9 @@ Your capabilities:
 - Answer questions and solve problems
 - Create tasks and assign them to team members
 - Analyze documents and extract action items
+- Access meeting transcripts from Fireflies AI
+- Sync recent meetings and create tasks from action items
+- Match meeting speakers to team members
 
 Always be helpful, concise, and professional.
 
@@ -458,6 +461,186 @@ The user is currently working on this task. Provide specific, actionable help re
           } catch (error) {
             console.error('Team search error:', error)
             return { success: false, error: 'Failed to search team members' }
+          }
+        },
+      },
+      getLastMeeting: {
+        description: 'Get the most recent meeting transcript from Fireflies AI',
+        parameters: z.object({}),
+        execute: async () => {
+          try {
+            const { getLastMeeting } = await import('@/lib/fireflies/service')
+
+            const meeting = await getLastMeeting()
+
+            if (!meeting) {
+              return { success: false, error: 'No meetings found' }
+            }
+
+            return {
+              success: true,
+              meeting: {
+                id: meeting.id,
+                title: meeting.title,
+                date: new Date(parseInt(meeting.date)).toLocaleString(),
+                duration: `${meeting.duration} minutes`,
+                speakers: meeting.speakers.map(s => s.name),
+                summary: meeting.summary?.overview,
+                actionItems: meeting.summary?.action_items,
+                keywords: meeting.summary?.keywords,
+                transcriptUrl: meeting.transcript_url,
+              },
+              message: `Retrieved last meeting: ${meeting.title}`,
+            }
+          } catch (error) {
+            console.error('Get last meeting error:', error)
+            return { success: false, error: 'Failed to fetch last meeting from Fireflies' }
+          }
+        },
+      },
+      syncMeetings: {
+        description: 'Sync recent meetings from Fireflies AI to the database (Admin only)',
+        parameters: z.object({
+          limit: z.number().min(1).max(50).default(10).describe('Number of meetings to sync'),
+        }),
+        execute: async ({ limit }) => {
+          try {
+            // Check if user is admin
+            if (user.role !== 'ADMIN') {
+              return { success: false, error: 'Admin access required to sync meetings' }
+            }
+
+            const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/meetings/sync`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ limit }),
+            })
+
+            if (!response.ok) {
+              return { success: false, error: 'Failed to sync meetings' }
+            }
+
+            const data = await response.json()
+
+            return {
+              success: true,
+              synced: data.synced,
+              skipped: data.skipped,
+              total: data.total,
+              message: `Synced ${data.synced} new meetings (${data.skipped} already existed)`,
+            }
+          } catch (error) {
+            console.error('Sync meetings error:', error)
+            return { success: false, error: 'Failed to sync meetings from Fireflies' }
+          }
+        },
+      },
+      getMeetingById: {
+        description: 'Get details of a specific meeting from the database',
+        parameters: z.object({
+          meetingId: z.string().describe('The database ID of the meeting'),
+        }),
+        execute: async ({ meetingId }) => {
+          try {
+            const meeting = await db.meeting.findUnique({
+              where: { id: meetingId },
+              include: {
+                speakers: {
+                  include: {
+                    matchedUser: {
+                      select: {
+                        firstName: true,
+                        lastName: true,
+                        email: true,
+                      },
+                    },
+                  },
+                },
+                tasks: {
+                  select: {
+                    id: true,
+                    title: true,
+                    status: true,
+                    assignedTo: {
+                      select: {
+                        firstName: true,
+                        lastName: true,
+                      },
+                    },
+                  },
+                },
+                _count: {
+                  select: {
+                    sentences: true,
+                  },
+                },
+              },
+            })
+
+            if (!meeting) {
+              return { success: false, error: 'Meeting not found' }
+            }
+
+            return {
+              success: true,
+              meeting: {
+                id: meeting.id,
+                title: meeting.title,
+                date: meeting.date.toLocaleString(),
+                duration: `${meeting.duration} minutes`,
+                speakers: meeting.speakers.map(s => ({
+                  name: s.speakerName,
+                  matchedUser: s.matchedUser ? `${s.matchedUser.firstName} ${s.matchedUser.lastName}` : null,
+                  confidence: s.matchConfidence,
+                })),
+                summary: meeting.summary,
+                actionItems: meeting.actionItems,
+                keywords: meeting.keywords,
+                transcriptUrl: meeting.transcriptUrl,
+                tasksCount: meeting.tasks.length,
+                tasks: meeting.tasks,
+                sentencesCount: meeting._count.sentences,
+              },
+              message: `Retrieved meeting: ${meeting.title}`,
+            }
+          } catch (error) {
+            console.error('Get meeting error:', error)
+            return { success: false, error: 'Failed to retrieve meeting details' }
+          }
+        },
+      },
+      createTasksFromMeeting: {
+        description: 'Create tasks from action items in a meeting transcript',
+        parameters: z.object({
+          meetingId: z.string().describe('The database ID of the meeting'),
+        }),
+        execute: async ({ meetingId }) => {
+          try {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/meetings/${meetingId}/tasks`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+            })
+
+            if (!response.ok) {
+              const error = await response.json()
+              return { success: false, error: error.details || 'Failed to create tasks' }
+            }
+
+            const data = await response.json()
+
+            return {
+              success: true,
+              tasksCreated: data.tasks.length,
+              tasks: data.tasks.map((task: any) => ({
+                id: task.id,
+                title: task.title,
+                assignedTo: task.assignedTo ? `${task.assignedTo.firstName} ${task.assignedTo.lastName}` : 'Unassigned',
+              })),
+              message: data.message,
+            }
+          } catch (error) {
+            console.error('Create tasks from meeting error:', error)
+            return { success: false, error: 'Failed to create tasks from meeting' }
           }
         },
       },

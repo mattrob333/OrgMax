@@ -6,6 +6,7 @@ import { Send, X, FileText, CheckSquare, Paperclip, Trash2, Upload } from 'lucid
 import { useChat } from 'ai/react'
 import Markdown from 'react-markdown'
 import { MentionAutocomplete } from '@/components/MentionAutocomplete'
+import { FirefliesControls } from './FirefliesControls'
 
 export function CopilotPanel() {
   const {
@@ -214,12 +215,37 @@ export function CopilotPanel() {
     setShowMentions(false)
   }
 
+  const handleFirefliesAction = (prompt: string) => {
+    // Set the input value and auto-submit
+    const syntheticEvent = {
+      target: { value: prompt }
+    } as React.ChangeEvent<HTMLInputElement>
+    handleInputChange(syntheticEvent)
+
+    // Auto-submit after a brief delay to ensure input is updated
+    setTimeout(() => {
+      const submitEvent = new Event('submit', { cancelable: true, bubbles: true })
+      const form = inputRef.current?.form
+      if (form) {
+        form.dispatchEvent(submitEvent)
+      }
+    }, 100)
+  }
+
   return (
     <div className="h-full min-h-0 flex flex-col border-l border-purple-500/20 bg-gray-900/40 text-sm">
       {/* Header */}
       <div className="px-3 py-3 sm:p-4 border-b border-purple-500/20 bg-gray-900/70 backdrop-blur">
-        <h2 className="text-lg font-semibold text-white sm:text-xl">AI Copilot</h2>
-        <p className="text-xs text-gray-400 mt-1">Your intelligent assistant</p>
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex-1">
+            <h2 className="text-lg font-semibold text-white sm:text-xl">AI Copilot</h2>
+            <p className="text-xs text-gray-400 mt-1">Your intelligent assistant</p>
+          </div>
+          <FirefliesControls
+            onActionTriggered={handleFirefliesAction}
+            isLoading={isLoading}
+          />
+        </div>
       </div>
 
       {/* Context Bar */}
