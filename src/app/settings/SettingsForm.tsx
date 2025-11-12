@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { User, Save, Bot, Globe } from 'lucide-react'
+import { User, Save, Bot, Globe, Video, Check, X, ExternalLink, Loader2 } from 'lucide-react'
 import { ExtendedUser } from '@/types'
 
 interface SettingsFormProps {
@@ -31,16 +31,44 @@ export function SettingsForm({ user }: SettingsFormProps) {
   const [saving, setSaving] = useState(false)
   const [saveStatus, setSaveStatus] = useState<'idle' | 'success' | 'error'>('idle')
 
+  // Fireflies integration state
+  const [firefliesApiKey, setFirefliesApiKey] = useState('')
+  const [firefliesConnected, setFirefliesConnected] = useState(false)
+  const [firefliesLastSync, setFirefliesLastSync] = useState<Date | null>(null)
+  const [testingFireflies, setTestingFireflies] = useState(false)
+  const [firefliesStatus, setFirefliesStatus] = useState<'idle' | 'success' | 'error'>('idle')
+  const [firefliesError, setFirefliesError] = useState('')
+
   // Detect user's timezone on component mount
   useEffect(() => {
     const detected = Intl.DateTimeFormat().resolvedOptions().timeZone
     setDetectedTimezone(detected)
-    
+
     // If user hasn't set a timezone yet, use detected one
     if (!user.timezone) {
       setTimezone(detected)
     }
   }, [user.timezone])
+
+  // Load Fireflies connection status on mount
+  useEffect(() => {
+    const loadFirefliesStatus = async () => {
+      try {
+        const response = await fetch('/api/settings/fireflies')
+        if (response.ok) {
+          const data = await response.json()
+          setFirefliesConnected(data.connected)
+          if (data.lastSync) {
+            setFirefliesLastSync(new Date(data.lastSync))
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load Fireflies status:', error)
+      }
+    }
+
+    loadFirefliesStatus()
+  }, [])
 
   const handleSave = async () => {
     setSaving(true)
@@ -65,6 +93,69 @@ export function SettingsForm({ user }: SettingsFormProps) {
       setSaveStatus('error')
     } finally {
       setSaving(false)
+    }
+  }
+
+  const handleFirefliesSave = async () => {
+    if (!firefliesApiKey.trim()) {
+      setFirefliesError('Please enter an API key')
+      setFirefliesStatus('error')
+      return
+    }
+
+    setTestingFireflies(true)
+    setFirefliesStatus('idle')
+    setFirefliesError('')
+
+    try {
+      const response = await fetch('/api/settings/fireflies', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ apiKey: firefliesApiKey }),
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        setFirefliesStatus('success')
+        setFirefliesConnected(true)
+        setFirefliesLastSync(new Date())
+        setFirefliesApiKey('') // Clear input after saving
+        setTimeout(() => setFirefliesStatus('idle'), 3000)
+      } else {
+        setFirefliesStatus('error')
+        setFirefliesError(data.error || 'Failed to connect to Fireflies')
+      }
+    } catch (error) {
+      setFirefliesStatus('error')
+      setFirefliesError('Failed to save Fireflies settings')
+    } finally {
+      setTestingFireflies(false)
+    }
+  }
+
+  const handleFirefliesDisconnect = async () => {
+    if (!confirm('Are you sure you want to disconnect Fireflies? This will remove your API key.')) {
+      return
+    }
+
+    try {
+      const response = await fetch('/api/settings/fireflies', {
+        method: 'DELETE',
+      })
+
+      if (response.ok) {
+        setFirefliesConnected(false)
+        setFirefliesLastSync(null)
+        setFirefliesApiKey('')
+        setFirefliesStatus('success')
+        setTimeout(() => setFirefliesStatus('idle'), 3000)
+      }
+    } catch (error) {
+      setFirefliesError('Failed to disconnect Fireflies')
+      setFirefliesStatus('error')
     }
   }
 
@@ -174,6 +265,106 @@ export function SettingsForm({ user }: SettingsFormProps) {
               <strong>Custom Instructions:</strong> {customPrompt}
             </p>
           )}
+        </div>
+      </div>
+
+      {/* Fireflies Integration Section */}
+      <div className="mt-6 bg-gray-800/50 backdrop-blur-sm border border-neutral-700 rounded-xl p-6 orb-glow">
+        <div className="flex items-center space-x-3 mb-6">
+          <Video className="text-purple-400" size={24} />
+          <h2 className="text-xl font-semibold text-white">Fireflies Integration</h2>
+        </div>
+
+        <div className="space-y-4">
+          <div>
+            <label htmlFor="firefliesApiKey" className="block text-sm font-medium text-gray-300 mb-2">
+              Fireflies API Key
+            </label>
+            <p className="text-sm text-gray-400 mb-3">
+              Connect your Fireflies account to access meeting transcripts and summaries in the AI copilot.
+              <a
+                href="https://app.fireflies.ai/integrations/custom/fireflies"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-purple-400 ml-1 inline-flex items-center hover:text-purple-300"
+              >
+                Get your API key <ExternalLink size={12} className="ml-1" />
+              </a>
+            </p>
+
+            {firefliesConnected ? (
+              <div className="space-y-3">
+                <div className="flex items-center space-x-2 text-sm">
+                  <div className="flex items-center space-x-2 text-green-400">
+                    <Check size={16} />
+                    <span>Connected to Fireflies</span>
+                  </div>
+                  {firefliesLastSync && (
+                    <span className="text-gray-400">
+                      • Last synced: {firefliesLastSync.toLocaleDateString()}
+                    </span>
+                  )}
+                </div>
+                <button
+                  onClick={handleFirefliesDisconnect}
+                  className="text-sm text-red-400 hover:text-red-300 transition-colors"
+                >
+                  Disconnect Fireflies
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <input
+                  type="password"
+                  id="firefliesApiKey"
+                  value={firefliesApiKey}
+                  onChange={(e) => setFirefliesApiKey(e.target.value)}
+                  placeholder="Enter your Fireflies API key"
+                  className="w-full bg-gray-800 border border-neutral-600 rounded-lg px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                />
+
+                {firefliesError && (
+                  <div className="flex items-center space-x-2 text-red-400 text-sm">
+                    <X size={16} />
+                    <span>{firefliesError}</span>
+                  </div>
+                )}
+
+                {firefliesStatus === 'success' && (
+                  <div className="flex items-center space-x-2 text-green-400 text-sm">
+                    <Check size={16} />
+                    <span>Fireflies connected successfully!</span>
+                  </div>
+                )}
+
+                <button
+                  onClick={handleFirefliesSave}
+                  disabled={testingFireflies || !firefliesApiKey.trim()}
+                  className="bg-purple-600 hover:bg-purple-700 disabled:bg-gray-700 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg transition-colors flex items-center space-x-2"
+                >
+                  {testingFireflies ? (
+                    <>
+                      <Loader2 size={16} className="animate-spin" />
+                      <span>Testing Connection...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Video size={16} />
+                      <span>Connect Fireflies</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
+          </div>
+
+          <div className="p-4 bg-gray-900/50 rounded-lg border border-neutral-700">
+            <h4 className="text-sm font-medium text-white mb-2">What is Fireflies?</h4>
+            <p className="text-sm text-gray-400 leading-relaxed">
+              Fireflies.ai is an AI meeting assistant that records, transcribes, and summarizes your meetings.
+              Connect it to OrgMax to bring meeting insights directly into your AI copilot for collaborative task creation and team discussions.
+            </p>
+          </div>
         </div>
       </div>
     </div>

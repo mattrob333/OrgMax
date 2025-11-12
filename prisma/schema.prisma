@@ -23,7 +23,12 @@ model User {
   systemMessage String?
   calendarConnected Boolean @default(false)
   timezone String? @default("UTC")
-  
+
+  // Fireflies integration
+  firefliesApiKey    String? @db.Text  // Encrypted API key
+  firefliesConnected Boolean @default(false)
+  firefliesLastSync  DateTime?
+
   // Org chart fields
   employeeId   String? @unique
   title        String?
@@ -208,7 +213,7 @@ model Task {
 
   createdBy   User @relation("TasksCreated", fields: [createdById], references: [id])
   assignedTo  User? @relation("TasksAssigned", fields: [assignedToId], references: [id])
-  sourceMeeting Meeting? @relation(fields: [sourceMeetingId], references: [id])
+  sourceMeeting Meeting? @relation("MeetingTasks", fields: [sourceMeetingId], references: [id])
 
   comments    TaskComment[]
   documents   TaskDocument[]  // Many-to-many with documents
@@ -336,7 +341,7 @@ model Meeting {
 
   // Relations
   speakers         MeetingSpeaker[]
-  tasks            Task[]   // Tasks created from this meeting
+  tasks            Task[]   @relation("MeetingTasks") // Tasks created from this meeting
   sentences        MeetingSentence[]
 
   createdAt        DateTime @default(now())

@@ -471,11 +471,20 @@ The user is currently working on this task. Provide specific, actionable help re
           try {
             const { getLastMeeting } = await import('@/lib/fireflies/service')
 
-            const meeting = await getLastMeeting()
+            const meeting = await getLastMeeting(userId)
 
             if (!meeting) {
               return { success: false, error: 'No meetings found' }
             }
+
+            const transcriptText = meeting.sentences
+              ?.map(sentence => {
+                const speaker = sentence.speaker_name || meeting.speakers.find(s => s.id === sentence.speaker_id)?.name
+                const prefix = speaker ? `${speaker}: ` : ''
+                return `${prefix}${sentence.text}`.trim()
+              })
+              .filter(Boolean)
+              .join('\n')
 
             return {
               success: true,
@@ -489,6 +498,7 @@ The user is currently working on this task. Provide specific, actionable help re
                 actionItems: meeting.summary?.action_items,
                 keywords: meeting.summary?.keywords,
                 transcriptUrl: meeting.transcript_url,
+                transcriptText,
               },
               message: `Retrieved last meeting: ${meeting.title}`,
             }

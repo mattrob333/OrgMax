@@ -21,8 +21,12 @@ export function NotificationBell() {
         if (response.ok) {
           const data = await response.json()
           setNotifications(data.notifications)
+        } else {
+          // Handle non-ok responses (401, 403, 500, etc.)
+          console.error('Failed to fetch notifications: HTTP', response.status)
         }
       } catch (error) {
+        // Handle network errors or parsing errors
         console.error('Failed to fetch notifications:', error)
       }
     }

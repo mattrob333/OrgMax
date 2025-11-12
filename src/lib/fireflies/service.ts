@@ -1,17 +1,59 @@
-import { firefliesClient } from './client'
+import { createFirefliesClient } from './client'
 import { GET_RECENT_TRANSCRIPTS, GET_TRANSCRIPT_BY_ID } from './queries'
 import type {
   GetTranscriptsResponse,
   GetTranscriptResponse,
   FirefliesTranscript
 } from './types'
+import { db } from '@/lib/db'
+import crypto from 'crypto'
+
+const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || 'default-encryption-key-change-in-production'
+const ALGORITHM = 'aes-256-cbc'
+
+/**
+ * Decrypt API key when retrieving from database
+ */
+function decrypt(text: string): string {
+  const parts = text.split(':')
+  const iv = Buffer.from(parts[0], 'hex')
+  const encryptedText = parts[1]
+  const key = crypto.scryptSync(ENCRYPTION_KEY, 'salt', 32)
+  const decipher = crypto.createDecipheriv(ALGORITHM, key, iv)
+  let decrypted = decipher.update(encryptedText, 'hex', 'utf8')
+  decrypted += decipher.final('utf8')
+  return decrypted
+}
+
+/**
+ * Get user's decrypted Fireflies API key from database
+ */
+async function getUserFirefliesApiKey(userId: string): Promise<string> {
+  const user = await db.user.findUnique({
+    where: { clerkId: userId },
+    select: {
+      firefliesApiKey: true,
+      firefliesConnected: true,
+    },
+  })
+
+  if (!user || !user.firefliesConnected || !user.firefliesApiKey) {
+    throw new Error('Fireflies not connected. Please add your API key in Settings.')
+  }
+
+  return decrypt(user.firefliesApiKey)
+}
 
 /**
  * Get the most recent meeting transcript from Fireflies
+ * @param userId - Clerk user ID to get Fireflies API key for
  */
-export async function getLastMeeting(): Promise<FirefliesTranscript | null> {
+export async function getLastMeeting(userId: string): Promise<FirefliesTranscript | null> {
   try {
-    const data = await firefliesClient.request<GetTranscriptsResponse>(
+    const apiKey = await getUserFirefliesApiKey(userId)
+    const client = createFirefliesClient(apiKey)
+
+    const data = await client.request<GetTranscriptsResponse>(
       GET_RECENT_TRANSCRIPTS,
       { limit: 1 }
     )
@@ -29,10 +71,15 @@ export async function getLastMeeting(): Promise<FirefliesTranscript | null> {
 
 /**
  * Get recent meetings with a limit
+ * @param userId - Clerk user ID to get Fireflies API key for
+ * @param limit - Maximum number of meetings to retrieve
  */
-export async function getRecentMeetings(limit: number = 10): Promise<FirefliesTranscript[]> {
+export async function getRecentMeetings(userId: string, limit: number = 10): Promise<FirefliesTranscript[]> {
   try {
-    const data = await firefliesClient.request<GetTranscriptsResponse>(
+    const apiKey = await getUserFirefliesApiKey(userId)
+    const client = createFirefliesClient(apiKey)
+
+    const data = await client.request<GetTranscriptsResponse>(
       GET_RECENT_TRANSCRIPTS,
       { limit }
     )
@@ -46,10 +93,15 @@ export async function getRecentMeetings(limit: number = 10): Promise<FirefliesTr
 
 /**
  * Get a specific meeting by Fireflies ID
+ * @param userId - Clerk user ID to get Fireflies API key for
+ * @param transcriptId - Fireflies transcript ID
  */
-export async function getMeetingById(transcriptId: string): Promise<FirefliesTranscript | null> {
+export async function getMeetingById(userId: string, transcriptId: string): Promise<FirefliesTranscript | null> {
   try {
-    const data = await firefliesClient.request<GetTranscriptResponse>(
+    const apiKey = await getUserFirefliesApiKey(userId)
+    const client = createFirefliesClient(apiKey)
+
+    const data = await client.request<GetTranscriptResponse>(
       GET_TRANSCRIPT_BY_ID,
       { transcriptId }
     )

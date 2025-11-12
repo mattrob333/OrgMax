@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
     console.log(`[/api/meetings/sync] Fetching ${limit} meetings from Fireflies`)
 
     // Fetch meetings from Fireflies
-    const meetings = await getRecentMeetings(limit)
+    const meetings = await getRecentMeetings(userId, limit)
 
     console.log(`[/api/meetings/sync] Received ${meetings.length} meetings from Fireflies`)
 

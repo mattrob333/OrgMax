@@ -1,15 +1,19 @@
 import { GraphQLClient } from 'graphql-request'
 
-if (!process.env.FIREFLIES_API_KEY) {
-  throw new Error('FIREFLIES_API_KEY is not set in environment variables')
-}
+/**
+ * Create a Fireflies GraphQL client with the provided API key
+ * @param apiKey - Fireflies API key for the user
+ * @returns GraphQL client configured for Fireflies API
+ */
+export function createFirefliesClient(apiKey: string): GraphQLClient {
+  if (!apiKey || !apiKey.trim()) {
+    throw new Error('Fireflies API key is required')
+  }
 
-export const firefliesClient = new GraphQLClient(
-  'https://api.fireflies.ai/graphql',
-  {
+  return new GraphQLClient('https://api.fireflies.ai/graphql', {
     headers: {
-      Authorization: `Bearer ${process.env.FIREFLIES_API_KEY}`,
+      Authorization: `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
     },
-  }
-)
+  })
+}

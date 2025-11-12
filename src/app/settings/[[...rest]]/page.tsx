@@ -10,7 +10,7 @@ export default async function SettingsPage() {
     <div className="h-screen flex flex-col">
       <Header />
 
-      <main className="flex-1 p-6">
+      <main className="flex-1 p-6 overflow-y-auto">
         <div className="max-w-2xl mx-auto">
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-white mb-2">Settings</h1>
