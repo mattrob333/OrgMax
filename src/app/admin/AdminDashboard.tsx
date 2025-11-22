@@ -67,7 +67,7 @@ export function AdminDashboard() {
         {/* Header Section */}
         <div className="text-center space-y-6">
           <div className="relative inline-block">
-            <div className="w-16 h-16 gradient-orb rounded-3xl flex items-center justify-center shadow-xl shadow-purple-500/30 transition-transform hover:scale-105">
+            <div className="w-16 h-16 gradient-orb rounded-3xl flex items-center justify-center shadow-xl shadow-[var(--orb-glow)] transition-transform hover:scale-105">
               <Crown className="text-white" size={32} />
             </div>
             <div className="absolute -inset-2 bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-3xl blur opacity-20 animate-pulse"></div>
@@ -88,14 +88,14 @@ export function AdminDashboard() {
           {/* Card Header */}
           <div className="text-center space-y-4">
             <div className="relative inline-block">
-              <div className="w-14 h-14 bg-gradient-to-br from-purple-400 to-purple-500 rounded-2xl flex items-center justify-center shadow-lg shadow-purple-500/25">
+              <div className="w-14 h-14 bg-gradient-to-br from-brand-accent to-[#A8D622] rounded-2xl flex items-center justify-center shadow-lg shadow-[var(--orb-glow)]">
                 <Upload className="text-white" size={28} />
               </div>
             </div>
             
             <div className="space-y-2">
               <h2 className="text-3xl font-light text-white">Employee Data Upload</h2>
-              <p className="text-lg font-light text-purple-200">Import your team structure via CSV</p>
+              <p className="text-lg font-light text-brand-accentSoft">Import your team structure via CSV</p>
             </div>
           </div>
 
@@ -113,11 +113,11 @@ export function AdminDashboard() {
               <div className="text-center py-16 space-y-6">
                 <div className="relative inline-block">
                   <div className="w-24 h-24 gradient-orb rounded-3xl mx-auto flex items-center justify-center">
-                    <div className="w-20 h-20 bg-gradient-to-br from-purple-300 to-purple-500 rounded-2xl flex items-center justify-center animate-spin">
+                    <div className="w-20 h-20 bg-gradient-to-br from-brand-accentSoft to-brand-accent rounded-2xl flex items-center justify-center animate-spin">
                       <div className="w-3 h-3 bg-white rounded-full"></div>
                     </div>
                   </div>
-                  <div className="absolute -inset-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-3xl blur opacity-30 animate-pulse"></div>
+                  <div className="absolute -inset-2 bg-gradient-to-r from-brand-accent to-[#A8D622] rounded-3xl blur opacity-30 animate-pulse"></div>
                 </div>
                 
                 <div className="space-y-2">
@@ -127,13 +127,13 @@ export function AdminDashboard() {
               </div>
             ) : (
               <div 
-                className="border-2 border-dashed border-white/20 rounded-3xl p-16 text-center hover:border-purple-400/40 transition-all cursor-pointer group hover:bg-white/5"
+                className="border-2 border-dashed border-white/20 rounded-3xl p-16 text-center hover:border-brand-accent/40 transition-all cursor-pointer group hover:bg-white/5"
                 onClick={() => fileInputRef.current?.click()}
               >
                 <div className="space-y-8">
                   <div className="relative inline-block">
-                    <div className="w-20 h-20 bg-gradient-to-br from-slate-700 to-slate-600 rounded-3xl mx-auto flex items-center justify-center group-hover:from-purple-500/20 group-hover:to-purple-600/20 transition-all group-hover:scale-105">
-                      <FileText className="text-slate-400 group-hover:text-purple-400 transition-colors" size={40} />
+                    <div className="w-20 h-20 bg-gradient-to-br from-slate-700 to-slate-600 rounded-3xl mx-auto flex items-center justify-center group-hover:from-brand-accent/20 group-hover:to-[#A8D622]/20 transition-all group-hover:scale-105">
+                      <FileText className="text-slate-400 group-hover:text-brand-accent transition-colors" size={40} />
                     </div>
                   </div>
                   
@@ -142,7 +142,7 @@ export function AdminDashboard() {
                     <p className="text-lg text-slate-400 font-light">or click to browse files</p>
                   </div>
                   
-                  <button className="inline-flex items-center space-x-3 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white px-8 py-4 rounded-2xl font-medium transition-all hover:scale-105 shadow-xl shadow-purple-500/25">
+                  <button className="inline-flex items-center space-x-3 bg-gradient-to-r from-brand-accent to-[#A8D622] hover:from-[#A8D622] hover:to-brand-accent text-white px-8 py-4 rounded-2xl font-medium transition-all hover:scale-105 shadow-xl shadow-[var(--orb-glow)]">
                     <Upload size={20} />
                     <span className="text-lg">Choose File</span>
                   </button>
@@ -150,7 +150,7 @@ export function AdminDashboard() {
                   <div className="pt-8 border-t border-white/10">
                     <div className="space-y-3">
                       <p className="text-sm text-slate-500 font-light">Expected format:</p>
-                      <code className="inline-block text-sm text-purple-300 bg-purple-500/10 px-4 py-2 rounded-xl border border-purple-500/20 font-mono">
+                      <code className="inline-block text-sm text-brand-accent bg-[var(--orb-purple)]/10 px-4 py-2 rounded-xl border border-white/12 font-mono">
                         employeeId, firstName, lastName, email, title, department, managerId
                       </code>
                     </div>

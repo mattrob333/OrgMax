@@ -64,9 +64,9 @@ export function TaskCreateModal({ isOpen, onClose, onCreated }: TaskCreateModalP
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="bg-gray-900 border border-purple-500/30 rounded-lg shadow-xl w-full max-w-md mx-4">
+      <div className="bg-gray-900 border border-white/12 rounded-lg shadow-xl w-full max-w-md mx-4">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-purple-500/20">
+        <div className="flex items-center justify-between p-6 border-b border-white/12">
           <h2 className="text-xl font-semibold text-white">Create New Task</h2>
           <button
             onClick={onClose}
@@ -88,7 +88,7 @@ export function TaskCreateModal({ isOpen, onClose, onCreated }: TaskCreateModalP
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
               required
-              className="w-full px-3 py-2 bg-gray-800 border border-purple-500/20 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/40"
+              className="w-full px-3 py-2 bg-gray-800 border border-white/12 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-brand-accent/40"
               placeholder="Enter task title"
             />
           </div>
@@ -102,7 +102,7 @@ export function TaskCreateModal({ isOpen, onClose, onCreated }: TaskCreateModalP
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               rows={3}
-              className="w-full px-3 py-2 bg-gray-800 border border-purple-500/20 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/40"
+              className="w-full px-3 py-2 bg-gray-800 border border-white/12 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-brand-accent/40"
               placeholder="Enter task description"
             />
           </div>
@@ -115,7 +115,7 @@ export function TaskCreateModal({ isOpen, onClose, onCreated }: TaskCreateModalP
             <select
               value={formData.priority}
               onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
-              className="w-full px-3 py-2 bg-gray-800 border border-purple-500/20 rounded-lg text-white focus:outline-none focus:border-purple-500/40"
+              className="w-full px-3 py-2 bg-gray-800 border border-white/12 rounded-lg text-white focus:outline-none focus:border-brand-accent/40"
             >
               <option value="LOW">Low</option>
               <option value="MEDIUM">Medium</option>
@@ -132,7 +132,7 @@ export function TaskCreateModal({ isOpen, onClose, onCreated }: TaskCreateModalP
             <select
               value={formData.assignedToId}
               onChange={(e) => setFormData({ ...formData, assignedToId: e.target.value })}
-              className="w-full px-3 py-2 bg-gray-800 border border-purple-500/20 rounded-lg text-white focus:outline-none focus:border-purple-500/40"
+              className="w-full px-3 py-2 bg-gray-800 border border-white/12 rounded-lg text-white focus:outline-none focus:border-brand-accent/40"
             >
               <option value="">Unassigned</option>
               {employees.map((emp) => (
@@ -152,7 +152,7 @@ export function TaskCreateModal({ isOpen, onClose, onCreated }: TaskCreateModalP
               type="date"
               value={formData.dueDate}
               onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
-              className="w-full px-3 py-2 bg-gray-800 border border-purple-500/20 rounded-lg text-white focus:outline-none focus:border-purple-500/40"
+              className="w-full px-3 py-2 bg-gray-800 border border-white/12 rounded-lg text-white focus:outline-none focus:border-brand-accent/40"
             />
           </div>
 
@@ -168,7 +168,7 @@ export function TaskCreateModal({ isOpen, onClose, onCreated }: TaskCreateModalP
             <button
               type="submit"
               disabled={isSubmitting}
-              className="flex-1 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium py-2 px-4 rounded-lg transition-colors"
+              className="flex-1 bg-brand-accent hover:bg-brand-accent/80 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium py-2 px-4 rounded-lg transition-colors"
             >
               {isSubmitting ? 'Creating...' : 'Create Task'}
             </button>

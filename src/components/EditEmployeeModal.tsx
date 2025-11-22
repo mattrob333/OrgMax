@@ -130,7 +130,7 @@ export function EditEmployeeModal({ user, isOpen, onClose, onSave }: EditEmploye
     >
       <div className="bg-gray-800 border border-neutral-700 rounded-xl shadow-2xl w-full max-w-2xl max-h-[85vh] overflow-hidden orb-glow flex flex-col">
         {/* Header */}
-        <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-4 flex items-center justify-between flex-shrink-0">
+        <div className="bg-gradient-to-r from-blue-600 to-[#A8D622] p-4 flex items-center justify-between flex-shrink-0">
           <div className="flex items-center space-x-3">
             <User className="text-white" size={24} />
             <h2 className="text-xl font-semibold text-white">
@@ -158,7 +158,7 @@ export function EditEmployeeModal({ user, isOpen, onClose, onSave }: EditEmploye
             {/* Basic Information */}
             <div className="space-y-3">
               <h3 className="text-md font-medium text-white flex items-center">
-                <User className="text-purple-400 mr-2" size={18} />
+                <User className="text-brand-accent mr-2" size={18} />
                 Basic Information
               </h3>
               
@@ -171,7 +171,7 @@ export function EditEmployeeModal({ user, isOpen, onClose, onSave }: EditEmploye
                     type="text"
                     value={formData.firstName}
                     onChange={(e) => handleInputChange('firstName', e.target.value)}
-                    className={`w-full bg-gray-700 border rounded-lg px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
+                    className={`w-full bg-gray-700 border rounded-lg px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-accent focus:border-transparent ${
                       errors.firstName ? 'border-red-500' : 'border-neutral-600'
                     }`}
                     placeholder="First name"
@@ -189,7 +189,7 @@ export function EditEmployeeModal({ user, isOpen, onClose, onSave }: EditEmploye
                     type="text"
                     value={formData.lastName}
                     onChange={(e) => handleInputChange('lastName', e.target.value)}
-                    className={`w-full bg-gray-700 border rounded-lg px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
+                    className={`w-full bg-gray-700 border rounded-lg px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-accent focus:border-transparent ${
                       errors.lastName ? 'border-red-500' : 'border-neutral-600'
                     }`}
                     placeholder="Last name"
@@ -204,7 +204,7 @@ export function EditEmployeeModal({ user, isOpen, onClose, onSave }: EditEmploye
             {/* Work Information */}
             <div className="space-y-3">
               <h3 className="text-md font-medium text-white flex items-center">
-                <Briefcase className="text-purple-400 mr-2" size={18} />
+                <Briefcase className="text-brand-accent mr-2" size={18} />
                 Work Information
               </h3>
               
@@ -217,7 +217,7 @@ export function EditEmployeeModal({ user, isOpen, onClose, onSave }: EditEmploye
                     type="text"
                     value={formData.title}
                     onChange={(e) => handleInputChange('title', e.target.value)}
-                    className="w-full bg-gray-700 border border-neutral-600 rounded-lg px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="w-full bg-gray-700 border border-neutral-600 rounded-lg px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-accent focus:border-transparent"
                     placeholder="e.g., Software Engineer"
                   />
                 </div>
@@ -230,7 +230,7 @@ export function EditEmployeeModal({ user, isOpen, onClose, onSave }: EditEmploye
                     type="text"
                     value={formData.department}
                     onChange={(e) => handleInputChange('department', e.target.value)}
-                    className="w-full bg-gray-700 border border-neutral-600 rounded-lg px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="w-full bg-gray-700 border border-neutral-600 rounded-lg px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-accent focus:border-transparent"
                     placeholder="e.g., Engineering"
                   />
                 </div>
@@ -240,7 +240,7 @@ export function EditEmployeeModal({ user, isOpen, onClose, onSave }: EditEmploye
             {/* AI Configuration */}
             <div className="space-y-3">
               <h3 className="text-md font-medium text-white flex items-center">
-                <Bot className="text-purple-400 mr-2" size={18} />
+                <Bot className="text-brand-accent mr-2" size={18} />
                 AI Assistant Configuration
               </h3>
               
@@ -251,7 +251,7 @@ export function EditEmployeeModal({ user, isOpen, onClose, onSave }: EditEmploye
                 <select
                   value={formData.personalityType}
                   onChange={(e) => handleInputChange('personalityType', e.target.value)}
-                  className="w-full bg-gray-700 border border-neutral-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full bg-gray-700 border border-neutral-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-brand-accent focus:border-transparent"
                 >
                   {PERSONALITY_TYPES.map((type) => (
                     <option key={type.value} value={type.value}>
@@ -272,7 +272,7 @@ export function EditEmployeeModal({ user, isOpen, onClose, onSave }: EditEmploye
                   value={formData.systemMessage}
                   onChange={(e) => handleInputChange('systemMessage', e.target.value)}
                   rows={2}
-                  className={`w-full bg-gray-700 border rounded-lg px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none ${
+                  className={`w-full bg-gray-700 border rounded-lg px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-accent focus:border-transparent resize-none ${
                     errors.systemMessage ? 'border-red-500' : 'border-neutral-600'
                   }`}
                   placeholder="e.g., You are a senior developer who specializes in React and TypeScript..."
@@ -298,7 +298,7 @@ export function EditEmployeeModal({ user, isOpen, onClose, onSave }: EditEmploye
                   value={formData.customPrompt}
                   onChange={(e) => handleInputChange('customPrompt', e.target.value)}
                   rows={3}
-                  className={`w-full bg-gray-700 border rounded-lg px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none ${
+                  className={`w-full bg-gray-700 border rounded-lg px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-accent focus:border-transparent resize-none ${
                     errors.customPrompt ? 'border-red-500' : 'border-neutral-600'
                   }`}
                   placeholder="e.g., I prefer informal communication, I'm available for quick questions during business hours..."
@@ -317,7 +317,7 @@ export function EditEmployeeModal({ user, isOpen, onClose, onSave }: EditEmploye
             {/* Timezone */}
             <div className="space-y-3">
               <h3 className="text-md font-medium text-white flex items-center">
-                <Globe className="text-purple-400 mr-2" size={18} />
+                <Globe className="text-brand-accent mr-2" size={18} />
                 Timezone Settings
               </h3>
               
@@ -331,7 +331,7 @@ export function EditEmployeeModal({ user, isOpen, onClose, onSave }: EditEmploye
                 <select
                   value={formData.timezone}
                   onChange={(e) => handleInputChange('timezone', e.target.value)}
-                  className="w-full bg-gray-700 border border-neutral-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full bg-gray-700 border border-neutral-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-brand-accent focus:border-transparent"
                 >
                   {TIMEZONE_OPTIONS.map((tz) => (
                     <option key={tz} value={tz}>{tz}</option>
@@ -354,7 +354,7 @@ export function EditEmployeeModal({ user, isOpen, onClose, onSave }: EditEmploye
           <button
             onClick={handleSave}
             disabled={saving}
-            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-6 py-2 rounded-lg transition-all orb-glow flex items-center space-x-2"
+            className="bg-gradient-to-r from-blue-600 to-[#A8D622] hover:from-blue-700 hover:to-brand-accent disabled:opacity-50 disabled:cursor-not-allowed text-white px-6 py-2 rounded-lg transition-all orb-glow flex items-center space-x-2"
           >
             <Save size={16} />
             <span>{saving ? 'Saving...' : 'Save Changes'}</span>

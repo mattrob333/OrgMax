@@ -27,7 +27,7 @@ export function CopilotPanel() {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat({
+  const { messages, input, handleInputChange, handleSubmit, isLoading, setInput, append } = useChat({
     api: '/api/copilot',
     body: {
       activeTask: copilotActiveTask,
@@ -215,27 +215,22 @@ export function CopilotPanel() {
     setShowMentions(false)
   }
 
-  const handleFirefliesAction = (prompt: string) => {
-    // Set the input value and auto-submit
-    const syntheticEvent = {
-      target: { value: prompt }
-    } as React.ChangeEvent<HTMLInputElement>
-    handleInputChange(syntheticEvent)
+  const handleFirefliesAction = async (prompt: string) => {
+    if (isLoading) return
 
-    // Auto-submit after a brief delay to ensure input is updated
-    setTimeout(() => {
-      const submitEvent = new Event('submit', { cancelable: true, bubbles: true })
-      const form = inputRef.current?.form
-      if (form) {
-        form.dispatchEvent(submitEvent)
-      }
-    }, 100)
+    // Clear any existing input so the text box stays empty while we send the action prompt
+    setInput('')
+
+    await append({
+      role: 'user',
+      content: prompt,
+    })
   }
 
   return (
-    <div className="h-full min-h-0 flex flex-col border-l border-purple-500/20 bg-gray-900/40 text-sm">
+    <div className="h-full min-h-0 flex flex-col border-l border-white/12 bg-[#0f0f0f]/90 text-sm">
       {/* Header */}
-      <div className="px-3 py-3 sm:p-4 border-b border-purple-500/20 bg-gray-900/70 backdrop-blur">
+      <div className="px-3 py-3 sm:p-4 border-b border-white/12 bg-[#0f0f0f]/95 backdrop-blur">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1">
             <h2 className="text-lg font-semibold text-white sm:text-xl">AI Copilot</h2>
@@ -250,9 +245,9 @@ export function CopilotPanel() {
 
       {/* Context Bar */}
       {(copilotActiveTask || copilotAttachedDocuments.length > 0) && (
-        <div className="px-3 py-2.5 sm:p-3 bg-purple-600/10 border-b border-purple-500/20">
+        <div className="px-3 py-2.5 sm:p-3 bg-brand-accent/10 border-b border-white/12">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-xs font-semibold text-purple-300 uppercase">Working Context</h3>
+            <h3 className="text-xs font-semibold text-brand-accent uppercase">Working Context</h3>
             <button
               onClick={clearCopilotContext}
               className="text-xs text-gray-400 hover:text-white transition-colors flex items-center gap-1"
@@ -264,11 +259,11 @@ export function CopilotPanel() {
 
           {/* Active Task */}
           {copilotActiveTask && (
-            <div className="bg-gray-900/50 rounded-lg p-3 border border-purple-500/20 mb-2">
+            <div className="bg-[#0f0f0f]/80 rounded-lg p-3 border border-white/12 mb-2">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
-                    <CheckSquare className="w-4 h-4 text-purple-300" />
+                    <CheckSquare className="w-4 h-4 text-brand-accent" />
                     <span className="text-sm font-medium text-white">{copilotActiveTask.title}</span>
                   </div>
                   {copilotActiveTask.description && (
@@ -287,10 +282,10 @@ export function CopilotPanel() {
 
           {/* Attached Documents */}
           {copilotAttachedDocuments.map((doc) => (
-            <div key={doc.id} className="bg-gray-900/50 rounded-lg px-3 py-2 border border-purple-500/20 mb-2 last:mb-0">
+            <div key={doc.id} className="bg-[#0f0f0f]/80 rounded-lg px-3 py-2 border border-white/12 mb-2 last:mb-0">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <FileText className="w-4 h-4 text-purple-300" />
+                  <FileText className="w-4 h-4 text-brand-accent" />
                   <span className="text-sm text-white">{doc.fileName}</span>
                 </div>
                 <button
@@ -311,14 +306,14 @@ export function CopilotPanel() {
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         className={`flex-1 overflow-y-auto px-3 py-4 sm:p-4 space-y-3 sm:space-y-4 transition-all ${
-          isDragOver ? 'bg-purple-600/10 border-2 border-dashed border-purple-500/40' : ''
+          isDragOver ? 'bg-brand-accent/10 border-2 border-dashed border-brand-accent/40' : ''
         }`}
       >
         {isDragOver && (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
-              <Upload className="w-12 h-12 text-purple-300 mx-auto mb-3" />
-              <p className="text-purple-300 font-medium">Drop here to add to context</p>
+              <Upload className="w-12 h-12 text-brand-accent mx-auto mb-3" />
+              <p className="text-brand-accent font-medium">Drop here to add to context</p>
               <p className="text-sm text-gray-400 mt-2">Tasks or Documents</p>
             </div>
           </div>
@@ -348,13 +343,50 @@ export function CopilotPanel() {
             <div
               className={`max-w-[80%] rounded-lg p-3 ${
                 message.role === 'user'
-                  ? 'bg-purple-600 text-white'
-                  : 'bg-gray-800/70 text-gray-100 border border-purple-500/20'
+                  ? 'bg-brand-accent text-white'
+                  : 'bg-[#1a1a1a]/90 text-gray-100 border border-white/12'
               }`}
             >
               {message.role === 'assistant' ? (
-                <div className="prose prose-invert prose-sm max-w-none">
-                  <Markdown>{message.content}</Markdown>
+                <div className="text-sm">
+                  <Markdown
+                    components={{
+                      h1: ({ children }) => <h1 className="text-lg font-bold text-brand-accent mb-2 mt-4">{children}</h1>,
+                      h2: ({ children }) => <h2 className="text-base font-semibold text-white mb-2 mt-3">{children}</h2>,
+                      h3: ({ children }) => <h3 className="text-sm font-semibold text-white mb-1 mt-2">{children}</h3>,
+                      p: ({ children }) => <p className="mb-2 text-gray-300 leading-relaxed last:mb-0">{children}</p>,
+                      ul: ({ children }) => <ul className="list-disc list-inside space-y-1 mb-2 text-gray-300">{children}</ul>,
+                      ol: ({ children }) => <ol className="list-decimal list-inside space-y-1 mb-2 text-gray-300">{children}</ol>,
+                      li: ({ children }) => <li className="ml-1">{children}</li>,
+                      strong: ({ children }) => <strong className="text-brand-accent font-semibold">{children}</strong>,
+                      em: ({ children }) => <em className="text-gray-400 italic">{children}</em>,
+                      code: ({ children }) => <code className="bg-[#0f0f0f] px-1.5 py-0.5 rounded text-brand-accent font-mono text-xs">{children}</code>,
+                      pre: ({ children }) => <pre className="bg-[#0f0f0f] p-3 rounded-lg overflow-x-auto text-xs text-gray-300 my-2 border border-white/10">{children}</pre>,
+                      blockquote: ({ children }) => <blockquote className="border-l-2 border-brand-accent pl-3 my-2 italic text-gray-400">{children}</blockquote>,
+                      a: ({ href, children }) => <a href={href} target="_blank" rel="noopener noreferrer" className="text-brand-accent hover:underline">{children}</a>,
+                      table: ({ children }) => <div className="overflow-x-auto my-4 border border-white/10 rounded-lg"><table className="w-full text-left text-sm">{children}</table></div>,
+                      thead: ({ children }) => <thead className="bg-[#0f0f0f] text-gray-400 font-medium">{children}</thead>,
+                      tbody: ({ children }) => <tbody className="divide-y divide-white/10">{children}</tbody>,
+                      tr: ({ children }) => <tr className="hover:bg-white/5 transition-colors">{children}</tr>,
+                      th: ({ children }) => <th className="px-4 py-3">{children}</th>,
+                      td: ({ children }) => <td className="px-4 py-3 text-gray-300">{children}</td>,
+                    }}
+                  >
+                    {message.content}
+                  </Markdown>
+                  {/* @ts-ignore - toolInvocations exists in the latest AI SDK but might not be typed in this project yet */}
+                  {message.toolInvocations?.map((toolInvocation: any) => (
+                    <div key={toolInvocation.toolCallId} className="mt-2 flex items-center gap-2 text-xs text-gray-400 bg-[#1a1a1a]/70 p-2 rounded border border-white/5">
+                      <div className="w-2 h-2 bg-brand-accent/50 rounded-full animate-pulse" />
+                      <span>
+                        {toolInvocation.toolName === 'getLastMeeting' ? 'Fetching last meeting...' :
+                         toolInvocation.toolName === 'listFirefliesMeetings' ? 'Listing recent meetings...' :
+                         toolInvocation.toolName === 'getFirefliesMeetingTranscript' ? 'Loading transcript...' :
+                         toolInvocation.toolName === 'createTask' ? 'Creating task...' :
+                         `Using ${toolInvocation.toolName}...`}
+                      </span>
+                    </div>
+                  ))}
                 </div>
               ) : (
                 <p className="text-sm whitespace-pre-wrap">{message.content}</p>
@@ -365,11 +397,11 @@ export function CopilotPanel() {
 
         {isLoading && (
           <div className="flex justify-start">
-            <div className="bg-gray-800/70 border border-purple-500/20 rounded-lg p-3">
+            <div className="bg-[#1a1a1a]/90 border border-white/12 rounded-lg p-3">
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" />
-                <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce delay-75" />
-                <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce delay-150" />
+                <div className="w-2 h-2 bg-brand-accent rounded-full animate-bounce" />
+                <div className="w-2 h-2 bg-brand-accent rounded-full animate-bounce delay-75" />
+                <div className="w-2 h-2 bg-brand-accent rounded-full animate-bounce delay-150" />
               </div>
             </div>
           </div>
@@ -379,9 +411,9 @@ export function CopilotPanel() {
       </div>
 
       {/* Input */}
-      <div className="px-3 py-3 sm:p-4 border-t border-purple-500/20 bg-gray-900/70 backdrop-blur">
-        <form onSubmit={handleSubmit} className="flex flex-col gap-2 sm:flex-row sm:items-center">
-          <div className="flex items-center gap-2 sm:flex-1">
+      <div className="px-3 py-3 border-t border-white/12 bg-[#0f0f0f]/95 backdrop-blur">
+        <form onSubmit={handleSubmit} className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-1 min-w-0">
             <input
               ref={fileInputRef}
               type="file"
@@ -393,10 +425,10 @@ export function CopilotPanel() {
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="shrink-0 rounded-lg border border-purple-500/20 bg-gray-800 px-2 py-2 text-gray-300 transition-colors hover:bg-gray-700 sm:px-3"
+              className="shrink-0 rounded-lg border border-white/12 bg-[#1a1a1a] p-2 text-gray-300 transition-colors hover:bg-[#252525]"
               title="Attach local document"
             >
-              <Paperclip className="w-5 h-5" />
+              <Paperclip className="w-4 h-4" />
             </button>
             <input
               ref={inputRef}
@@ -404,18 +436,15 @@ export function CopilotPanel() {
               value={input}
               onChange={handleInputChangeWithMentions}
               placeholder={copilotActiveTask ? `Ask about "${copilotActiveTask.title}"...` : 'Ask me anything...'}
-              className="flex-1 min-w-0 rounded-lg border border-purple-500/20 bg-gray-800 px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/40 sm:px-4"
+              className="flex-1 min-w-0 rounded-lg border border-white/12 bg-[#1a1a1a] px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-brand-accent/40"
             />
           </div>
           <button
             type="submit"
             disabled={isLoading || !input.trim()}
-            className="w-full shrink-0 rounded-lg bg-purple-600 px-3 py-2 text-white transition-colors hover:bg-purple-700 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto sm:px-4"
+            className="shrink-0 rounded-lg bg-brand-accent p-2 text-white transition-colors hover:bg-brand-accent/80 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            <div className="flex items-center justify-center gap-2">
-              <Send className="w-5 h-5" />
-              <span className="text-sm font-medium sm:hidden">Send</span>
-            </div>
+            <Send className="w-4 h-4" />
           </button>
         </form>
       </div>

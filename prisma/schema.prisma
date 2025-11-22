@@ -65,6 +65,17 @@ model User {
   @@map("users")
 }
 
+model SystemSettings {
+  id          String @id @default(cuid())
+  key         String @unique
+  value       String @db.Text
+  description String?
+  
+  updatedAt   DateTime @updatedAt
+  
+  @@map("system_settings")
+}
+
 model Chat {
   id         String @id @default(cuid())
   userId     String // The user initiating the chat

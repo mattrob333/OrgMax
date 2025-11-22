@@ -103,7 +103,7 @@ export function DocumentUploadModal({ onClose, onUploadSuccess }: DocumentUpload
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-gray-900 rounded-xl p-6 max-w-md w-full border border-purple-500/20 shadow-2xl">
+      <div className="bg-gray-900 rounded-xl p-6 max-w-md w-full border border-white/12 shadow-2xl">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-bold text-white">Upload Document</h2>
           <button
@@ -116,7 +116,7 @@ export function DocumentUploadModal({ onClose, onUploadSuccess }: DocumentUpload
 
         <div className="space-y-4">
           {/* File Upload Area */}
-          <div className="border-2 border-dashed border-gray-700 rounded-lg p-6 hover:border-purple-500/50 transition-colors">
+          <div className="border-2 border-dashed border-gray-700 rounded-lg p-6 hover:border-[var(--orb-purple)]/50 transition-colors">
             <input
               ref={fileInputRef}
               type="file"
@@ -149,7 +149,7 @@ export function DocumentUploadModal({ onClose, onUploadSuccess }: DocumentUpload
               value={scope}
               onChange={(e) => setScope(e.target.value as any)}
               disabled={isUploading}
-              className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-purple-500 disabled:opacity-50"
+              className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-brand-accent disabled:opacity-50"
             >
               <option value="PERSONAL">Personal (only you can see)</option>
               <option value="TEAM">Team (your department can see)</option>
@@ -168,7 +168,7 @@ export function DocumentUploadModal({ onClose, onUploadSuccess }: DocumentUpload
               onChange={(e) => setCategory(e.target.value)}
               disabled={isUploading}
               placeholder="e.g., Meeting Notes, Reports, SOPs"
-              className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 disabled:opacity-50"
+              className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-brand-accent disabled:opacity-50"
             />
           </div>
 
@@ -180,7 +180,7 @@ export function DocumentUploadModal({ onClose, onUploadSuccess }: DocumentUpload
               checked={analyzeOnUpload}
               onChange={(e) => setAnalyzeOnUpload(e.target.checked)}
               disabled={isUploading}
-              className="w-4 h-4 text-purple-600 bg-gray-700 border-gray-600 rounded focus:ring-purple-500"
+              className="w-4 h-4 text-brand-accent bg-gray-700 border-gray-600 rounded focus:ring-brand-accent"
             />
             <label htmlFor="analyze-upload" className="flex-1 text-sm text-gray-300">
               Analyze document with AI on upload
@@ -189,9 +189,9 @@ export function DocumentUploadModal({ onClose, onUploadSuccess }: DocumentUpload
 
           {/* Upload Status */}
           {isUploading && (
-            <div className="flex items-center justify-center gap-3 p-4 bg-purple-900/20 border border-purple-500/30 rounded-lg">
-              <div className="w-5 h-5 border-4 border-purple-500 border-t-transparent rounded-full animate-spin" />
-              <span className="text-purple-300">Uploading...</span>
+            <div className="flex items-center justify-center gap-3 p-4 bg-black/20 border border-white/12 rounded-lg">
+              <div className="w-5 h-5 border-4 border-brand-accent border-t-transparent rounded-full animate-spin" />
+              <span className="text-brand-accent">Uploading...</span>
             </div>
           )}
         </div>

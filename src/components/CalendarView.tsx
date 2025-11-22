@@ -237,7 +237,7 @@ export function CalendarView({ user, className = '' }: CalendarViewProps) {
 
   if (!user.calendarConnected) {
     return (
-      <div className={`bg-gray-800/50 border border-purple-500/20 rounded-lg p-6 ${className}`}>
+      <div className={`bg-[#1a1a1a] border border-white/10 rounded-lg p-6 ${className}`}>
         <div className="text-center">
           <Calendar className="mx-auto h-12 w-12 text-gray-400 mb-4" />
           <h3 className="text-white font-medium mb-2">Calendar Not Connected</h3>
@@ -250,13 +250,13 @@ export function CalendarView({ user, className = '' }: CalendarViewProps) {
   }
 
   return (
-    <div className={`bg-gray-800/50 border border-purple-500/20 rounded-lg ${className}`}>
+    <div className={`bg-[#1a1a1a] border border-white/10 rounded-lg ${className}`}>
       {/* Header */}
-      <div className="border-b border-purple-500/20 p-4">
+      <div className="border-b border-white/10 p-4">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-3">
             <h3 className="text-white font-medium flex items-center">
-              <Calendar className="w-5 h-5 mr-2 text-purple-400" />
+              <Calendar className="w-5 h-5 mr-2 text-brand-accent" />
               {user.firstName}&apos;s Calendar
             </h3>
             <a
@@ -295,7 +295,7 @@ export function CalendarView({ user, className = '' }: CalendarViewProps) {
             
             <button
               onClick={() => setViewMode(viewMode === 'day' ? 'week' : 'day')}
-              className="px-3 py-1 bg-purple-600/20 text-purple-300 rounded text-sm hover:bg-purple-600/30 transition-colors"
+              className="px-3 py-1 bg-[var(--orb-purple)]/20 text-brand-accent rounded text-sm hover:bg-brand-accent/30 transition-colors"
             >
               {viewMode === 'day' ? 'Week' : 'Day'} View
             </button>
@@ -347,7 +347,7 @@ export function CalendarView({ user, className = '' }: CalendarViewProps) {
       <div className="p-4">
         {loading ? (
           <div className="text-center py-8">
-            <div className="w-6 h-6 border-2 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+            <div className="w-6 h-6 border-2 border-brand-accent border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
             <p className="text-gray-400 text-sm">Loading events...</p>
           </div>
         ) : error ? (
@@ -355,7 +355,7 @@ export function CalendarView({ user, className = '' }: CalendarViewProps) {
             <p className="text-red-400 text-sm">{error}</p>
             <button
               onClick={() => fetchEvents(false)}
-              className="mt-2 px-4 py-2 bg-purple-600/20 text-purple-300 rounded text-sm hover:bg-purple-600/30 transition-colors"
+              className="mt-2 px-4 py-2 bg-[var(--orb-purple)]/20 text-brand-accent rounded text-sm hover:bg-brand-accent/30 transition-colors"
             >
               Retry
             </button>
@@ -394,11 +394,11 @@ export function CalendarView({ user, className = '' }: CalendarViewProps) {
                       <h4 className={`font-semibold text-sm uppercase tracking-wide ${
                         dateLabel === 'Today' ? 'text-green-400' : 
                         dateLabel === 'Tomorrow' ? 'text-blue-400' : 
-                        'text-purple-400'
+                        'text-brand-accent'
                       }`}>
                         {dateLabel}
                       </h4>
-                      <div className="flex-1 h-px bg-gradient-to-r from-purple-500/30 to-transparent"></div>
+                      <div className="flex-1 h-px bg-gradient-to-r from-brand-accent/30 to-transparent"></div>
                       <span className="text-xs text-gray-500">
                         {dayEvents.length} event{dayEvents.length !== 1 ? 's' : ''}
                       </span>
@@ -411,10 +411,10 @@ export function CalendarView({ user, className = '' }: CalendarViewProps) {
                         .map((event) => (
                         <div
                           key={event.id}
-                          className={`bg-gray-900/50 border rounded-lg p-4 hover:border-purple-500/30 transition-all duration-200 ${
+                          className={`bg-[#0f0f0f] border rounded-lg p-4 hover:border-white/10 transition-all duration-200 ${
                             isEventToday(event) && isEventUpcoming(event) 
                               ? 'border-green-500/40 bg-green-900/10' 
-                              : 'border-gray-700'
+                              : 'border-white/5'
                           }`}
                         >
                           <div className="flex items-start justify-between mb-2">

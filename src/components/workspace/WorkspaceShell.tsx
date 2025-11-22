@@ -52,7 +52,7 @@ export function WorkspaceShell({ leftNav, mainContent, rightPanel }: WorkspaceSh
           maxSize={30}
           collapsible={true}
           collapsedSize={0}
-          className={workspaceLayout.leftSidebarCollapsed ? '' : 'bg-gray-900/50 border-r border-purple-500/20'}
+          className={workspaceLayout.leftSidebarCollapsed ? '' : 'bg-[#0f0f0f]/90 border-r border-white/12'}
         >
           {!workspaceLayout.leftSidebarCollapsed && (
             <div className="h-full min-h-0 flex flex-col">
@@ -61,15 +61,15 @@ export function WorkspaceShell({ leftNav, mainContent, rightPanel }: WorkspaceSh
               </div>
               <button
                 onClick={toggleLeftSidebar}
-                className="p-2 border-t border-purple-500/20 hover:bg-purple-500/10 transition-colors"
+                className="p-2 border-t border-white/12 hover:bg-[var(--orb-purple)]/10 transition-colors"
               >
-                <ChevronLeft className="w-4 h-4 text-purple-300" />
+                <ChevronLeft className="w-4 h-4 text-brand-accent" />
               </button>
             </div>
           )}
         </Panel>
 
-        <PanelResizeHandle className="w-1 bg-purple-500/20 hover:bg-purple-500/40 transition-colors cursor-col-resize">
+        <PanelResizeHandle className="w-[1px] bg-white/10 hover:bg-brand-accent/40 transition-colors cursor-col-resize">
           <div className="h-full w-full" />
         </PanelResizeHandle>
 
@@ -79,17 +79,17 @@ export function WorkspaceShell({ leftNav, mainContent, rightPanel }: WorkspaceSh
             {workspaceLayout.leftSidebarCollapsed && (
               <button
                 onClick={toggleLeftSidebar}
-                className="absolute top-2 left-2 p-2 bg-gray-800 rounded-lg hover:bg-purple-500/20 transition-colors z-10"
+                className="absolute top-2 left-2 p-2 bg-[#1a1a1a] rounded-lg hover:bg-[var(--orb-purple)]/20 transition-colors z-10"
               >
-                <ChevronRight className="w-4 h-4 text-purple-300" />
+                <ChevronRight className="w-4 h-4 text-brand-accent" />
               </button>
             )}
             {workspaceLayout.rightPanelCollapsed && rightPanel && (
               <button
                 onClick={toggleRightPanel}
-                className="absolute top-2 right-2 p-2 bg-gray-800 rounded-lg hover:bg-purple-500/20 transition-colors z-10"
+                className="absolute top-2 right-2 p-2 bg-[#1a1a1a] rounded-lg hover:bg-[var(--orb-purple)]/20 transition-colors z-10"
               >
-                <ChevronLeft className="w-4 h-4 text-purple-300" />
+                <ChevronLeft className="w-4 h-4 text-brand-accent" />
               </button>
             )}
             {mainContent}
@@ -99,21 +99,21 @@ export function WorkspaceShell({ leftNav, mainContent, rightPanel }: WorkspaceSh
         {/* Right Copilot Panel (Future) */}
         {rightPanel && !workspaceLayout.rightPanelCollapsed && (
           <>
-            <PanelResizeHandle className="w-1 bg-purple-500/20 hover:bg-purple-500/40 transition-colors cursor-col-resize">
+            <PanelResizeHandle className="w-[1px] bg-white/10 hover:bg-brand-accent/40 transition-colors cursor-col-resize">
               <div className="h-full w-full" />
             </PanelResizeHandle>
             <Panel
-              defaultSize={16}
-              minSize={12}
+              defaultSize={25}
+              minSize={20}
               maxSize={40}
-              className="bg-gray-900/50 border-l border-purple-500/20"
+              className="bg-[#0f0f0f]/90 border-l border-white/12"
             >
               <div className="h-full min-h-0 flex flex-col">
                 <button
                   onClick={toggleRightPanel}
-                  className="p-2 border-b border-purple-500/20 hover:bg-purple-500/10 transition-colors"
+                  className="p-2 border-b border-white/12 hover:bg-[var(--orb-purple)]/10 transition-colors"
                 >
-                  <ChevronRight className="w-4 h-4 text-purple-300" />
+                  <ChevronRight className="w-4 h-4 text-brand-accent" />
                 </button>
                 <div className="flex-1 min-h-0">
                   {rightPanel}

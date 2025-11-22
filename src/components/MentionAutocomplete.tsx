@@ -94,7 +94,7 @@ export function MentionAutocomplete({ query, position, onSelect, onClose }: Ment
   return (
     <div
       ref={containerRef}
-      className="fixed z-50 w-80 bg-gray-900 border border-purple-500/30 rounded-lg shadow-2xl max-h-64 overflow-y-auto"
+      className="fixed z-50 w-80 bg-gray-900 border border-white/12 rounded-lg shadow-2xl max-h-64 overflow-y-auto"
       style={{
         top: `${position.top}px`,
         left: `${position.left}px`,
@@ -102,7 +102,7 @@ export function MentionAutocomplete({ query, position, onSelect, onClose }: Ment
     >
       {isLoading ? (
         <div className="p-4 text-center text-gray-400">
-          <div className="w-5 h-5 border-2 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto" />
+          <div className="w-5 h-5 border-2 border-brand-accent border-t-transparent rounded-full animate-spin mx-auto" />
         </div>
       ) : (
         <div className="py-1">
@@ -112,8 +112,8 @@ export function MentionAutocomplete({ query, position, onSelect, onClose }: Ment
               onClick={() => onSelect(member.email, member.name)}
               className={`w-full px-4 py-2 text-left flex items-center gap-3 transition-colors ${
                 index === selectedIndex
-                  ? 'bg-purple-600/30 text-white'
-                  : 'text-gray-300 hover:bg-purple-600/10'
+                  ? 'bg-brand-accent/30 text-white'
+                  : 'text-gray-300 hover:bg-brand-accent/10'
               }`}
             >
               {member.imageUrl ? (
@@ -123,7 +123,7 @@ export function MentionAutocomplete({ query, position, onSelect, onClose }: Ment
                   className="w-8 h-8 rounded-full object-cover"
                 />
               ) : (
-                <div className="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-full bg-brand-accent flex items-center justify-center">
                   <User className="w-4 h-4 text-white" />
                 </div>
               )}

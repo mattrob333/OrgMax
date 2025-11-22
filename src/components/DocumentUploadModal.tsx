@@ -116,7 +116,7 @@ export function DocumentUploadModal({ employee, onClose, onUploadSuccess }: Docu
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-gray-900 rounded-xl p-6 max-w-md w-full border border-purple-500/20 shadow-2xl">
+      <div className="bg-gray-900 rounded-xl p-6 max-w-md w-full border border-white/12 shadow-2xl">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-bold text-white">
             Document Upload
@@ -142,7 +142,7 @@ export function DocumentUploadModal({ employee, onClose, onUploadSuccess }: Docu
 
         {isLoading ? (
           <div className="flex justify-center py-8">
-            <div className="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin" />
+            <div className="w-8 h-8 border-4 border-brand-accent border-t-transparent rounded-full animate-spin" />
           </div>
         ) : existingDocument ? (
           <div className="bg-gray-800 rounded-lg p-4 mb-4">
@@ -173,7 +173,7 @@ export function DocumentUploadModal({ employee, onClose, onUploadSuccess }: Docu
         ) : null}
 
         <div className="space-y-4">
-          <div className="border-2 border-dashed border-gray-700 rounded-lg p-6 hover:border-purple-500/50 transition-colors">
+          <div className="border-2 border-dashed border-gray-700 rounded-lg p-6 hover:border-[var(--orb-purple)]/50 transition-colors">
             <input
               ref={fileInputRef}
               type="file"
@@ -199,7 +199,7 @@ export function DocumentUploadModal({ employee, onClose, onUploadSuccess }: Docu
 
           {isUploading && (
             <div className="flex justify-center">
-              <div className="w-6 h-6 border-4 border-purple-500 border-t-transparent rounded-full animate-spin" />
+              <div className="w-6 h-6 border-4 border-brand-accent border-t-transparent rounded-full animate-spin" />
             </div>
           )}
         </div>

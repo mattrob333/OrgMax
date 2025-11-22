@@ -16,7 +16,7 @@ export function LeftNav() {
 
   return (
     <nav className="px-3 py-4 space-y-2 sm:p-4">
-      <h2 className="text-[11px] font-semibold text-purple-300 uppercase tracking-wide mb-3 sm:text-xs sm:mb-4">
+      <h2 className="text-[11px] font-semibold text-brand-accent uppercase tracking-wide mb-3 sm:text-xs sm:mb-4">
         Workspace
       </h2>
       {NAV_ITEMS.map((item) => {
@@ -32,8 +32,8 @@ export function LeftNav() {
             className={`
               w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg text-left text-sm transition-all sm:gap-3 sm:px-4 sm:py-3
               ${isActive
-                ? 'bg-purple-600/30 text-purple-300 border border-purple-500/40'
-                : 'text-gray-400 hover:text-purple-300 hover:bg-purple-600/10'
+                ? 'bg-brand-accent/30 text-brand-accent border border-brand-accent/40'
+                : 'text-gray-400 hover:text-brand-accent hover:bg-brand-accent/10'
               }
               ${isComingSoon ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
             `}
@@ -41,7 +41,7 @@ export function LeftNav() {
             <Icon className="w-[18px] h-[18px] sm:w-5 sm:h-5" />
             <span className="font-medium leading-none">{item.label}</span>
             {isComingSoon && (
-              <span className="ml-auto text-xs text-purple-400">Soon</span>
+              <span className="ml-auto text-xs text-brand-accent">Soon</span>
             )}
           </button>
         )

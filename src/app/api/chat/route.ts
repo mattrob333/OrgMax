@@ -139,17 +139,29 @@ ${targetEmployee.customPrompt ? `Additional custom instructions: ${targetEmploye
 
 Act as if you are speaking on behalf of ${targetEmployee.firstName}, following your personality type and any specific instructions provided.`;
 
+  // Initialize xAI client (Grok) using OpenAI compatibility layer
+  const xai = createOpenAI({
+    name: 'xai',
+    baseURL: 'https://api.x.ai/v1',
+    apiKey: process.env.XAI_API_KEY,
+  })
+
   try {
-    const openai = createOpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
-    })
+    console.log('Starting Chat request with XAI...')
     
     const result = await streamText({
-      model: openai('gpt-4o-mini'),
+      model: xai('grok-4-1-fast-non-reasoning'),
       system: systemPrompt,
       messages,
       maxTokens: 1024,
       temperature: 0.7,
+      providerOptions: {
+        xai: {
+          searchParameters: {
+            mode: 'auto',
+          },
+        },
+      },
       toolChoice: 'auto',
       maxSteps: 5,
       tools: {

@@ -23,7 +23,7 @@ export function FirefliesControls({ onActionTriggered, isLoading }: FirefliesCon
       id: 'get-last',
       label: 'Get Last Meeting',
       description: 'Fetch the most recent meeting transcript',
-      prompt: 'Get the last meeting transcript from Fireflies AI and show me a summary with speakers, action items, and key points.',
+      prompt: 'Use the getLastMeeting tool to retrieve my most recent Fireflies meeting transcript. Then analyze it and provide: 1) Meeting title and date, 2) List of speakers/attendees, 3) Key discussion points and summary, 4) Action items extracted from the transcript, 5) Any important keywords or topics mentioned.',
     },
     {
       id: 'sync',
@@ -46,7 +46,7 @@ export function FirefliesControls({ onActionTriggered, isLoading }: FirefliesCon
       <button
         onClick={() => setIsOpen(!isOpen)}
         disabled={isLoading}
-        className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-purple-500/30 bg-purple-600/10 text-purple-300 hover:bg-purple-600/20 hover:border-purple-500/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+        className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-white/12 bg-brand-accent/10 text-brand-accent hover:bg-[var(--orb-purple)]/20 hover:border-[var(--orb-purple)]/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm"
         title="Fireflies AI Actions"
       >
         {isLoading && lastAction ? (
@@ -60,9 +60,9 @@ export function FirefliesControls({ onActionTriggered, isLoading }: FirefliesCon
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div className="absolute top-full left-0 mt-2 w-72 bg-gray-800 border border-purple-500/30 rounded-lg shadow-xl z-50 overflow-hidden">
-          <div className="px-3 py-2 bg-purple-600/20 border-b border-purple-500/20">
-            <h3 className="text-sm font-semibold text-purple-300">Fireflies AI Actions</h3>
+        <div className="absolute top-full right-0 mt-2 w-72 bg-[#1a1a1a] border border-white/12 rounded-lg shadow-xl z-50 overflow-hidden">
+          <div className="px-3 py-2 bg-[var(--orb-purple)]/20 border-b border-white/12">
+            <h3 className="text-sm font-semibold text-brand-accent">Fireflies AI Actions</h3>
             <p className="text-xs text-gray-400 mt-0.5">Manage meeting transcripts</p>
           </div>
 
@@ -72,7 +72,7 @@ export function FirefliesControls({ onActionTriggered, isLoading }: FirefliesCon
                 key={action.id}
                 onClick={() => handleAction(action.label, action.prompt)}
                 disabled={isLoading}
-                className="w-full px-3 py-2.5 text-left hover:bg-purple-600/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed border-b border-gray-700/50 last:border-0"
+                className="w-full px-3 py-2.5 text-left hover:bg-brand-accent/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed border-b border-gray-700/50 last:border-0"
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
@@ -91,7 +91,7 @@ export function FirefliesControls({ onActionTriggered, isLoading }: FirefliesCon
             ))}
           </div>
 
-          <div className="px-3 py-2 bg-gray-900/50 border-t border-purple-500/20">
+          <div className="px-3 py-2 bg-[#0f0f0f]/80 border-t border-white/12">
             <p className="text-xs text-gray-500">
               Powered by Fireflies AI
             </p>

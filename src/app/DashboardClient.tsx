@@ -141,7 +141,7 @@ export function DashboardClient({ employees, currentUserId, adminStatus, current
         <div className="w-full max-w-lg text-center">
           <Card className="relative">
             <div className="relative mb-10">
-              <div className="gradient-orb mx-auto flex h-24 w-24 items-center justify-center rounded-3xl shadow-xl shadow-purple-500/30 transition-transform hover:scale-105">
+              <div className="gradient-orb mx-auto flex h-24 w-24 items-center justify-center rounded-3xl shadow-xl shadow-[var(--orb-glow)] transition-transform hover:scale-105">
                 <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-yellow-300 to-orange-500">
                   <span className="text-3xl font-light text-white">🔐</span>
                 </div>
@@ -182,12 +182,12 @@ export function DashboardClient({ employees, currentUserId, adminStatus, current
           <Card className="relative">
             {/* Orb icon with subtle animation */}
             <div className="relative mb-10">
-              <div className="gradient-orb mx-auto flex h-24 w-24 items-center justify-center rounded-3xl shadow-xl shadow-purple-500/30 transition-transform hover:scale-105">
-                <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-300 to-purple-500">
+              <div className="gradient-orb mx-auto flex h-24 w-24 items-center justify-center rounded-3xl shadow-xl shadow-[var(--orb-glow)] transition-transform hover:scale-105">
+                <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-accentSoft to-brand-accent">
                   <span className="text-3xl font-light text-white">O</span>
                 </div>
               </div>
-              <div className="absolute -inset-2 rounded-3xl bg-gradient-to-r from-purple-500 to-pink-500 opacity-20 blur-lg animate-pulse"></div>
+              <div className="absolute -inset-2 rounded-3xl bg-gradient-to-r from-brand-accent to-[#A8D622] opacity-20 blur-lg animate-pulse"></div>
             </div>
 
             {/* Typography with proper hierarchy */}
@@ -198,8 +198,8 @@ export function DashboardClient({ employees, currentUserId, adminStatus, current
 
             {/* Action button */}
             <div className="text-center">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-purple-500/20 text-purple-300 text-sm">
-                <span className="w-2 h-2 bg-purple-400 rounded-full animate-pulse"></span>
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--orb-purple)]/20 text-brand-accent text-sm">
+                <span className="w-2 h-2 bg-brand-accent rounded-full animate-pulse"></span>
                 Awaiting employee data
               </div>
             </div>
@@ -244,14 +244,14 @@ export function DashboardClient({ employees, currentUserId, adminStatus, current
       {/* Main content area */}
       <div className="flex-1 relative flex flex-col">
         {/* Navigation tabs */}
-        <div className="flex-shrink-0 border-b border-purple-500/20 bg-gray-900/50 backdrop-blur-sm">
+        <div className="flex-shrink-0 border-b border-white/12 bg-gray-900/50 backdrop-blur-sm">
           <div className="flex space-x-1 p-2">
             <button
               onClick={() => setCurrentView('orgchart')}
               className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                 currentView === 'orgchart'
-                  ? 'bg-purple-600/30 text-purple-300 border border-purple-500/40'
-                  : 'text-gray-400 hover:text-purple-300 hover:bg-purple-600/10'
+                  ? 'bg-brand-accent/30 text-brand-accent border border-brand-accent/40'
+                  : 'text-gray-400 hover:text-brand-accent hover:bg-brand-accent/10'
               }`}
             >
               <Users className="w-4 h-4" />
@@ -265,8 +265,8 @@ export function DashboardClient({ employees, currentUserId, adminStatus, current
                 }}
                 className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                   currentView === 'calendar'
-                    ? 'bg-purple-600/30 text-purple-300 border border-purple-500/40'
-                    : 'text-gray-400 hover:text-purple-300 hover:bg-purple-600/10'
+                    ? 'bg-brand-accent/30 text-brand-accent border border-brand-accent/40'
+                    : 'text-gray-400 hover:text-brand-accent hover:bg-brand-accent/10'
                 }`}
               >
                 <Calendar className="w-4 h-4" />
@@ -286,8 +286,8 @@ export function DashboardClient({ employees, currentUserId, adminStatus, current
           {isRefreshing && (
             <div className="absolute inset-0 bg-gray-900/50 backdrop-blur-sm z-50 flex items-center justify-center transition-all duration-300">
               <div className="text-center">
-                <div className="w-16 h-16 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mb-4 mx-auto"></div>
-                <p className="text-purple-300 font-medium">Updating organization chart...</p>
+                <div className="w-16 h-16 border-4 border-brand-accent border-t-transparent rounded-full animate-spin mb-4 mx-auto"></div>
+                <p className="text-brand-accent font-medium">Updating organization chart...</p>
               </div>
             </div>
           )}

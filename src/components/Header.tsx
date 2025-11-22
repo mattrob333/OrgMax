@@ -29,14 +29,14 @@ export function Header() {
         <div className="flex items-center gap-x-3">
           <Link href="/" className="flex items-center gap-x-3 group">
             <div className="relative">
-              <div className="w-10 h-10 gradient-orb rounded-2xl flex items-center justify-center shadow-lg shadow-purple-500/30 group-hover:scale-105 transition-transform duration-200">
+              <div className="w-10 h-10 gradient-orb rounded-2xl flex items-center justify-center shadow-lg shadow-[var(--orb-glow)] group-hover:scale-105 transition-transform duration-200">
                 <span className="text-white font-bold text-lg">O</span>
               </div>
-              <div className="absolute -inset-1 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl blur opacity-0 group-hover:opacity-25 transition-opacity duration-200"></div>
+              <div className="absolute -inset-1 bg-gradient-to-r from-brand-accent to-[#A8D622] rounded-2xl blur opacity-0 group-hover:opacity-25 transition-opacity duration-200"></div>
             </div>
             <div>
               <h1 className="font-bold text-base text-white">OrgChart AI</h1>
-              <p className="text-xs text-purple-300/80">Powered by intelligence</p>
+              <p className="text-xs text-brand-accent/80">Powered by intelligence</p>
             </div>
           </Link>
         </div>
@@ -78,7 +78,7 @@ export function Header() {
                   <div className="text-white text-sm font-medium">
                     {user.firstName || 'User'}
                   </div>
-                  <div className="text-purple-300/80 text-xs font-light">
+                  <div className="text-brand-accent/80 text-xs font-light">
                     {isAdmin ? 'Administrator' : 'Member'}
                   </div>
                 </div>
@@ -89,12 +89,12 @@ export function Header() {
                   appearance={{
                     elements: {
                       avatarBox:
-                        'h-8 w-8 rounded-full ring-2 ring-white/20 shadow-lg transition-all hover:ring-purple-400/50 hover:scale-105',
+                        'h-8 w-8 rounded-full ring-2 ring-white/20 shadow-lg transition-all hover:ring-brand-accent/50 hover:scale-105',
                       userButtonPopoverCard:
                         'shadow-2xl rounded-2xl border border-white/20 bg-black/80 backdrop-blur-xl',
                       userButtonPopoverActions: 'bg-transparent',
                       userButtonPopoverActionButton:
-                        'font-light rounded-xl text-slate-300 hover:bg-purple-500/20 hover:text-white transition-all',
+                        'font-light rounded-xl text-slate-300 hover:bg-[var(--orb-purple)]/20 hover:text-white transition-all',
                       userButtonPopoverFooter: 'hidden',
                     },
                   }}

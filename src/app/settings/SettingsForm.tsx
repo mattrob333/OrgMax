@@ -162,7 +162,7 @@ export function SettingsForm({ user }: SettingsFormProps) {
   return (
     <div className="bg-gray-800/50 backdrop-blur-sm border border-neutral-700 rounded-xl p-6 orb-glow">
       <div className="flex items-center space-x-3 mb-6">
-        <Bot className="text-purple-400" size={24} />
+        <Bot className="text-brand-accent" size={24} />
         <h2 className="text-xl font-semibold text-white">AI Assistant Customization</h2>
       </div>
 
@@ -180,7 +180,7 @@ export function SettingsForm({ user }: SettingsFormProps) {
             onChange={(e) => setCustomPrompt(e.target.value)}
             placeholder="e.g., I prefer informal communication, I'm available for quick questions during business hours, I specialize in frontend development..."
             rows={6}
-            className="w-full bg-gray-800 border border-neutral-600 rounded-lg px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+            className="w-full bg-gray-800 border border-neutral-600 rounded-lg px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-accent focus:border-transparent resize-none"
           />
           <p className="text-xs text-gray-500 mt-1">
             {customPrompt.length}/500 characters
@@ -195,7 +195,7 @@ export function SettingsForm({ user }: SettingsFormProps) {
           <p className="text-sm text-gray-400 mb-3">
             This timezone will be used for all calendar events and scheduling.
             {detectedTimezone && (
-              <span className="block text-purple-400 mt-1">
+              <span className="block text-brand-accent mt-1">
                 Detected: {detectedTimezone}
               </span>
             )}
@@ -204,7 +204,7 @@ export function SettingsForm({ user }: SettingsFormProps) {
             id="timezone"
             value={timezone}
             onChange={(e) => setTimezone(e.target.value)}
-            className="w-full bg-gray-800 border border-neutral-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            className="w-full bg-gray-800 border border-neutral-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-brand-accent focus:border-transparent"
           >
             {/* Add detected timezone if not in options */}
             {detectedTimezone && !TIMEZONE_OPTIONS.includes(detectedTimezone) && (
@@ -247,7 +247,7 @@ export function SettingsForm({ user }: SettingsFormProps) {
 
       <div className="mt-6 p-4 bg-gray-900/50 rounded-lg">
         <h3 className="text-white font-medium mb-2 flex items-center">
-          <User className="text-purple-400 mr-2" size={16} />
+          <User className="text-brand-accent mr-2" size={16} />
           Preview: How others will see your AI assistant
         </h3>
         <div className="text-sm text-gray-400">
@@ -271,7 +271,7 @@ export function SettingsForm({ user }: SettingsFormProps) {
       {/* Fireflies Integration Section */}
       <div className="mt-6 bg-gray-800/50 backdrop-blur-sm border border-neutral-700 rounded-xl p-6 orb-glow">
         <div className="flex items-center space-x-3 mb-6">
-          <Video className="text-purple-400" size={24} />
+          <Video className="text-brand-accent" size={24} />
           <h2 className="text-xl font-semibold text-white">Fireflies Integration</h2>
         </div>
 
@@ -286,7 +286,7 @@ export function SettingsForm({ user }: SettingsFormProps) {
                 href="https://app.fireflies.ai/integrations/custom/fireflies"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-purple-400 ml-1 inline-flex items-center hover:text-purple-300"
+                className="text-brand-accent ml-1 inline-flex items-center hover:text-brand-accent"
               >
                 Get your API key <ExternalLink size={12} className="ml-1" />
               </a>
@@ -320,7 +320,7 @@ export function SettingsForm({ user }: SettingsFormProps) {
                   value={firefliesApiKey}
                   onChange={(e) => setFirefliesApiKey(e.target.value)}
                   placeholder="Enter your Fireflies API key"
-                  className="w-full bg-gray-800 border border-neutral-600 rounded-lg px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full bg-gray-800 border border-neutral-600 rounded-lg px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-accent focus:border-transparent"
                 />
 
                 {firefliesError && (
@@ -340,7 +340,7 @@ export function SettingsForm({ user }: SettingsFormProps) {
                 <button
                   onClick={handleFirefliesSave}
                   disabled={testingFireflies || !firefliesApiKey.trim()}
-                  className="bg-purple-600 hover:bg-purple-700 disabled:bg-gray-700 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg transition-colors flex items-center space-x-2"
+                  className="bg-brand-accent hover:bg-brand-accent/80 disabled:bg-gray-700 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg transition-colors flex items-center space-x-2"
                 >
                   {testingFireflies ? (
                     <>

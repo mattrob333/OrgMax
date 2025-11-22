@@ -1,7 +1,14 @@
-import { openai } from '@ai-sdk/openai'
+import { createOpenAI } from '@ai-sdk/openai'
 import { generateObject, generateText } from 'ai'
 import { z } from 'zod'
 import { AI_PROMPTS, SYSTEM_PROMPTS } from '@/lib/ai-prompts'
+
+// Initialize xAI client
+const xai = createOpenAI({
+  name: 'xai',
+  baseURL: 'https://api.x.ai/v1',
+  apiKey: process.env.XAI_API_KEY,
+})
 
 /**
  * Schema for extracted action items
@@ -47,7 +54,7 @@ export async function extractActionItems(
 ): Promise<z.infer<typeof ActionItemSchema>[]> {
   try {
     const result = await generateObject({
-      model: openai('gpt-4o'),
+      model: xai('grok-4-1-fast-non-reasoning'),
       schema: z.object({
         actionItems: z.array(ActionItemSchema),
       }),
@@ -72,7 +79,7 @@ export async function summarizeDocument(
 ): Promise<string> {
   try {
     const result = await generateText({
-      model: openai('gpt-4o-mini'), // Faster/cheaper for summaries
+      model: xai('grok-4-1-fast-non-reasoning'), // Faster/cheaper for summaries
       prompt: AI_PROMPTS.summarize(content, maxLength),
       system: SYSTEM_PROMPTS.documentAnalyzer,
       maxTokens: 300,
@@ -94,7 +101,7 @@ export async function extractEntities(
 ): Promise<z.infer<typeof EntitiesSchema>> {
   try {
     const result = await generateObject({
-      model: openai('gpt-4o'),
+      model: xai('grok-4-1-fast-non-reasoning'),
       schema: EntitiesSchema,
       prompt: AI_PROMPTS.extractEntities(content),
       system: SYSTEM_PROMPTS.documentAnalyzer,
@@ -122,7 +129,7 @@ export async function parseTranscript(
 ): Promise<z.infer<typeof TranscriptSchema>> {
   try {
     const result = await generateObject({
-      model: openai('gpt-4o'),
+      model: xai('grok-4-1-fast-non-reasoning'),
       schema: TranscriptSchema,
       prompt: AI_PROMPTS.parseTranscript(content),
       system: SYSTEM_PROMPTS.documentAnalyzer,
@@ -171,7 +178,7 @@ export async function analyzeForTasks(
     })
 
     const result = await generateObject({
-      model: openai('gpt-4o'),
+      model: xai('grok-4-1-fast-non-reasoning'),
       schema: TaskSuggestionSchema,
       prompt: AI_PROMPTS.analyzeForTasks(content, teamMembers),
       system: SYSTEM_PROMPTS.taskCreator,
@@ -194,7 +201,7 @@ export async function matchMentionToUser(
 ): Promise<number> {
   try {
     const result = await generateText({
-      model: openai('gpt-4o-mini'), // Fast for simple matching
+      model: xai('grok-4-1-fast-non-reasoning'), // Fast for simple matching
       prompt: AI_PROMPTS.matchMentionToUser(mentionText, possibleUsers),
       system: SYSTEM_PROMPTS.mentionResolver,
       maxTokens: 10,
@@ -231,7 +238,7 @@ export async function generateInsights(
     })
 
     const result = await generateObject({
-      model: openai('gpt-4o'),
+      model: xai('grok-4-1-fast-non-reasoning'),
       schema: InsightsSchema,
       prompt: AI_PROMPTS.generateInsights(content),
       system: SYSTEM_PROMPTS.documentAnalyzer,

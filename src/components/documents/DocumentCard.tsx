@@ -23,7 +23,7 @@ interface DocumentCardProps {
 const SCOPE_COLORS = {
   PERSONAL: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
   TEAM: 'bg-green-500/20 text-green-400 border-green-500/30',
-  COMPANY: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
+  COMPANY: 'bg-[var(--orb-purple)]/20 text-brand-accent border-white/12',
 }
 
 const FILE_TYPE_ICONS: Record<string, string> = {
@@ -74,8 +74,8 @@ export function DocumentCard({ document, onAnalyze, onDelete }: DocumentCardProp
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
       className={`
-        group relative bg-gray-800 rounded-lg border border-gray-700
-        hover:border-purple-500/50 transition-all duration-200
+        group relative bg-[#1a1a1a] rounded-lg border border-white/10
+        hover:border-[var(--orb-purple)]/50 transition-all duration-200
         ${isDragging ? 'opacity-50 scale-95' : 'cursor-move'}
       `}
     >
@@ -113,15 +113,15 @@ export function DocumentCard({ document, onAnalyze, onDelete }: DocumentCardProp
                   className="fixed inset-0 z-10"
                   onClick={() => setShowMenu(false)}
                 />
-                <div className="absolute right-0 mt-1 w-48 bg-gray-900 border border-gray-700 rounded-lg shadow-xl z-20">
+                <div className="absolute right-0 mt-1 w-48 bg-[#1a1a1a] border border-white/10 rounded-lg shadow-xl z-20">
                   <button
                     onClick={() => {
                       onAnalyze(document.id)
                       setShowMenu(false)
                     }}
-                    className="w-full px-4 py-2 text-left text-sm text-white hover:bg-gray-800 flex items-center gap-2 rounded-t-lg"
+                    className="w-full px-4 py-2 text-left text-sm text-white hover:bg-white/5 flex items-center gap-2 rounded-t-lg"
                   >
-                    <Sparkles className="w-4 h-4 text-purple-400" />
+                    <Sparkles className="w-4 h-4 text-brand-accent" />
                     Analyze with AI
                   </button>
                   <button
@@ -129,7 +129,7 @@ export function DocumentCard({ document, onAnalyze, onDelete }: DocumentCardProp
                       // TODO: Open preview modal
                       setShowMenu(false)
                     }}
-                    className="w-full px-4 py-2 text-left text-sm text-white hover:bg-gray-800 flex items-center gap-2"
+                    className="w-full px-4 py-2 text-left text-sm text-white hover:bg-white/5 flex items-center gap-2"
                   >
                     <Eye className="w-4 h-4" />
                     Preview
@@ -139,7 +139,7 @@ export function DocumentCard({ document, onAnalyze, onDelete }: DocumentCardProp
                       onDelete(document.id)
                       setShowMenu(false)
                     }}
-                    className="w-full px-4 py-2 text-left text-sm text-red-400 hover:bg-gray-800 flex items-center gap-2 rounded-b-lg"
+                    className="w-full px-4 py-2 text-left text-sm text-red-400 hover:bg-white/5 flex items-center gap-2 rounded-b-lg"
                   >
                     <Trash2 className="w-4 h-4" />
                     Delete
@@ -163,14 +163,14 @@ export function DocumentCard({ document, onAnalyze, onDelete }: DocumentCardProp
             {document.scope}
           </span>
           {document.category && (
-            <span className="px-2 py-1 text-xs rounded border bg-gray-700/50 text-gray-300 border-gray-600">
+            <span className="px-2 py-1 text-xs rounded border bg-white/5 text-gray-300 border-white/10">
               {document.category}
             </span>
           )}
         </div>
 
         {/* Drag hint */}
-        <div className="mt-3 pt-3 border-t border-gray-700 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="mt-3 pt-3 border-t border-white/10 opacity-0 group-hover:opacity-100 transition-opacity">
           <p className="text-xs text-gray-500 text-center">
             Drag to copilot to attach
           </p>

@@ -18,14 +18,14 @@ export default function RootLayout({
       appearance={{
         baseTheme: dark,
         variables: {
-          colorPrimary: '#8b5cf6',
-          colorBackground: '#0f172a',
-          colorInputBackground: '#1e293b',
-          colorInputText: '#e2e8f0',
+          colorPrimary: '#C4F82A',
+          colorBackground: '#050505',
+          colorInputBackground: 'rgba(255,255,255,0.06)',
+          colorInputText: '#F5F5F5',
         },
         elements: {
-          formButtonPrimary: 'bg-indigo-600 hover:bg-indigo-700 text-white orb-glow',
-          card: 'bg-gray-800/50 backdrop-blur-sm border border-neutral-700 orb-glow',
+          formButtonPrimary: 'bg-[#C4F82A] hover:bg-[#A8D622] text-slate-950 font-semibold orb-glow',
+          card: 'bg-white/5 backdrop-blur-xl border border-white/10 orb-glow',
         }
       }}
     >

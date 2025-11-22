@@ -26,10 +26,13 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url)
     const filter = searchParams.get('filter') // 'my' | 'assigned' | 'created' | 'all'
     const status = searchParams.get('status') // 'TODO' | 'IN_PROGRESS' | 'REVIEW' | 'DONE'
+    const assignedTo = searchParams.get('assignedTo')
 
     let where: any = {}
 
-    if (filter === 'assigned') {
+    if (assignedTo) {
+      where.assignedToId = assignedTo
+    } else if (filter === 'assigned') {
       where.assignedToId = user.id
     } else if (filter === 'created') {
       where.createdById = user.id

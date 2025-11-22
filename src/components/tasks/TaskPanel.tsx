@@ -33,21 +33,27 @@ interface Task {
   } | null
 }
 
-export function TaskPanel() {
+export function TaskPanel({ userId, embedded = false }: { userId?: string, embedded?: boolean }) {
   const [tasks, setTasks] = useState<Task[]>([])
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
-  const [filter, setFilter] = useState('my') // 'my' | 'assigned' | 'created' | 'all'
+  const [filter, setFilter] = useState(userId ? 'assigned' : 'my') // 'my' | 'assigned' | 'created' | 'all'
   const [loading, setLoading] = useState(true)
   const [dragOverColumn, setDragOverColumn] = useState<string | null>(null)
 
   useEffect(() => {
     fetchTasks()
-  }, [filter])
+  }, [filter, userId])
 
   const fetchTasks = async () => {
     try {
       setLoading(true)
-      const res = await fetch(`/api/tasks?filter=${filter}`)
+      const queryParams = new URLSearchParams()
+      queryParams.append('filter', filter)
+      if (userId) {
+        queryParams.append('assignedTo', userId)
+      }
+      
+      const res = await fetch(`/api/tasks?${queryParams.toString()}`)
       if (res.ok) {
         const data = await res.json()
         setTasks(data.tasks)
@@ -107,36 +113,38 @@ export function TaskPanel() {
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
-      <div className="p-4 border-b border-purple-500/20 flex items-center justify-between bg-gray-900/50">
-        <h2 className="text-2xl font-semibold text-white">Tasks</h2>
-        <div className="flex items-center gap-4">
-          <select
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-            className="px-3 py-2 bg-gray-800 text-white rounded-lg border border-purple-500/20 focus:outline-none focus:border-purple-500/40"
-          >
-            <option value="my">My Tasks</option>
-            <option value="assigned">Assigned to Me</option>
-            <option value="created">Created by Me</option>
-            <option value="all">All Tasks</option>
-          </select>
-          <button
-            onClick={() => setIsCreateModalOpen(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors font-medium"
-          >
-            <Plus className="w-5 h-5" />
-            New Task
-          </button>
+      {!embedded && (
+        <div className="p-4 border-b border-white/10 flex items-center justify-between bg-[#1a1a1a]">
+          <h2 className="text-2xl font-semibold text-white">Tasks</h2>
+          <div className="flex items-center gap-4">
+            <select
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              className="px-3 py-2 bg-[#1a1a1a] text-white rounded-lg border border-white/10 focus:outline-none focus:border-brand-accent/40"
+            >
+              <option value="my">My Tasks</option>
+              <option value="assigned">Assigned to Me</option>
+              <option value="created">Created by Me</option>
+              <option value="all">All Tasks</option>
+            </select>
+            <button
+              onClick={() => setIsCreateModalOpen(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-brand-accent hover:bg-brand-accent/80 text-white rounded-lg transition-colors font-medium"
+            >
+              <Plus className="w-5 h-5" />
+              New Task
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Kanban Board */}
-      <div className="flex-1 overflow-x-auto p-4 bg-gray-900/30">
+      <div className="flex-1 overflow-x-auto p-4 bg-transparent">
         {loading ? (
           <div className="h-full flex items-center justify-center">
             <div className="text-center">
-              <div className="w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mb-4 mx-auto"></div>
-              <p className="text-purple-300">Loading tasks...</p>
+              <div className="w-12 h-12 border-4 border-brand-accent border-t-transparent rounded-full animate-spin mb-4 mx-auto"></div>
+              <p className="text-brand-accent">Loading tasks...</p>
             </div>
           </div>
         ) : (
@@ -148,14 +156,14 @@ export function TaskPanel() {
                 onDrop={(e) => handleColumnDrop(e, column.id)}
                 onDragOver={handleColumnDragOver}
                 onDragLeave={handleColumnDragLeave}
-                className={`flex-shrink-0 w-80 bg-gray-900/50 rounded-lg border flex flex-col transition-all ${
+                className={`flex-shrink-0 w-80 bg-[#1a1a1a] rounded-lg border flex flex-col transition-all ${
                   dragOverColumn === column.id
-                    ? 'border-purple-500 bg-purple-500/10 shadow-lg shadow-purple-500/20'
-                    : 'border-purple-500/20'
+                    ? 'border-brand-accent bg-[var(--orb-purple)]/10 shadow-lg shadow-[var(--orb-glow)]'
+                    : 'border-white/10'
                 }`}
               >
                 {/* Column header */}
-                <div className="p-4 border-b border-purple-500/20">
+                <div className="p-4 border-b border-white/10">
                   <h3 className="font-semibold text-white">{column.label}</h3>
                   <p className="text-sm text-gray-400">{column.tasks.length} tasks</p>
                 </div>

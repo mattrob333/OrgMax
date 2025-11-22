@@ -15,7 +15,7 @@ export default async function SettingsPage() {
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-white mb-2">Settings</h1>
             <p className="text-gray-400">Customize your AI assistant behavior</p>
-            <div className="text-xs text-purple-400 mt-2">
+            <div className="text-xs text-brand-accent mt-2">
               Blessed by the Orb of Ultimate Chaos 🟣
             </div>
           </div>
@@ -28,7 +28,7 @@ export default async function SettingsPage() {
               Manage your account settings and connect social accounts for enhanced features
             </p>
 
-            <div className="bg-gray-800/50 backdrop-blur-sm border border-purple-500/20 rounded-lg p-6">
+            <div className="bg-gray-800/50 backdrop-blur-sm border border-white/12 rounded-lg p-6">
               <UserProfile
                 additionalOAuthScopes={{
                   google: ['https://www.googleapis.com/auth/calendar.readonly', 'https://www.googleapis.com/auth/calendar.events'],

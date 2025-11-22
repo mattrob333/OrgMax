@@ -77,7 +77,7 @@ const ChatMessage = ({ message, employeeImage, employeeInitials, userImage, user
 
   return (
     <div className={`flex items-start gap-3 ${isAssistant ? '' : 'flex-row-reverse'}`}>
-      <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${isAssistant ? 'bg-purple-600/20 text-purple-400' : 'bg-gray-700 text-gray-400'}`}>
+      <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${isAssistant ? 'bg-[var(--orb-purple)]/20 text-brand-accent' : 'bg-gray-700 text-gray-400'}`}>
         {isAssistant ? (
           employeeImage ? (
             <Image
@@ -109,16 +109,16 @@ const ChatMessage = ({ message, employeeImage, employeeInitials, userImage, user
           <ReactMarkdown
             components={{
               p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
-              strong: ({ children }) => <strong className="text-purple-300 font-semibold">{children}</strong>,
-              em: ({ children }) => <em className="text-purple-200">{children}</em>,
-              code: ({ children }) => <code className="bg-gray-700 px-1.5 py-0.5 rounded text-purple-200 text-xs">{children}</code>,
+              strong: ({ children }) => <strong className="text-brand-accent font-semibold">{children}</strong>,
+              em: ({ children }) => <em className="text-brand-accentSoft">{children}</em>,
+              code: ({ children }) => <code className="bg-gray-700 px-1.5 py-0.5 rounded text-brand-accentSoft text-xs">{children}</code>,
               pre: ({ children }) => <pre className="bg-gray-700 p-3 rounded-lg overflow-x-auto text-xs">{children}</pre>,
               ul: ({ children }) => <ul className="list-disc list-inside space-y-1">{children}</ul>,
               ol: ({ children }) => <ol className="list-decimal list-inside space-y-1">{children}</ol>,
               li: ({ children }) => <li className="text-gray-200">{children}</li>,
-              h1: ({ children }) => <h1 className="text-lg font-bold text-purple-300 mb-2">{children}</h1>,
-              h2: ({ children }) => <h2 className="text-base font-semibold text-purple-300 mb-1">{children}</h2>,
-              h3: ({ children }) => <h3 className="text-sm font-medium text-purple-300 mb-1">{children}</h3>,
+              h1: ({ children }) => <h1 className="text-lg font-bold text-brand-accent mb-2">{children}</h1>,
+              h2: ({ children }) => <h2 className="text-base font-semibold text-brand-accent mb-1">{children}</h2>,
+              h3: ({ children }) => <h3 className="text-sm font-medium text-brand-accent mb-1">{children}</h3>,
             }}
           >
             {message.content}
@@ -211,13 +211,13 @@ export function ChatHistoryModal({ chatId, isOpen, onClose }: ChatHistoryModalPr
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.95 }}
           transition={{ ease: "easeOut", duration: 0.2 }}
-          className="flex h-[85vh] w-full max-w-2xl flex-col rounded-xl bg-gray-900 shadow-2xl shadow-purple-900/10 border border-white/10"
+          className="flex h-[85vh] w-full max-w-2xl flex-col rounded-xl bg-gray-900 shadow-2xl shadow-black/60 border border-white/10"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
           <div className="flex items-center justify-between rounded-t-xl border-b border-gray-700/50 p-4">
             <div className="flex items-center gap-3">
-              <MessageCircle className="w-6 h-6 text-purple-400" />
+              <MessageCircle className="w-6 h-6 text-brand-accent" />
               <div>
                 <h2 className="text-lg font-semibold text-white">Chat History</h2>
                 {chatData && (
@@ -270,9 +270,9 @@ export function ChatHistoryModal({ chatId, isOpen, onClose }: ChatHistoryModalPr
             {loading && (
               <div className="flex items-center justify-center h-full">
                 <div className="flex items-center space-x-2 text-gray-400">
-                  <div className="w-4 h-4 bg-purple-400 rounded-full animate-bounce"></div>
-                  <div className="w-4 h-4 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                  <div className="w-4 h-4 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                  <div className="w-4 h-4 bg-brand-accent rounded-full animate-bounce"></div>
+                  <div className="w-4 h-4 bg-brand-accent rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                  <div className="w-4 h-4 bg-brand-accent rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                   <span className="ml-2">Loading chat history...</span>
                 </div>
               </div>

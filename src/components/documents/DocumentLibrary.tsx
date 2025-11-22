@@ -16,7 +16,7 @@ interface Document {
   updatedAt: string
 }
 
-export function DocumentLibrary() {
+export function DocumentLibrary({ userId, embedded = false }: { userId?: string, embedded?: boolean }) {
   const [documents, setDocuments] = useState<Document[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
@@ -26,7 +26,7 @@ export function DocumentLibrary() {
   // Load documents
   useEffect(() => {
     loadDocuments()
-  }, [scopeFilter])
+  }, [scopeFilter, userId])
 
   const loadDocuments = async () => {
     try {
@@ -34,6 +34,11 @@ export function DocumentLibrary() {
       const params = new URLSearchParams()
       if (scopeFilter !== 'ALL') {
         params.append('scope', scopeFilter)
+      }
+      if (userId) {
+        // This assumes the API supports filtering by userId. 
+        // If not, it will be ignored or we might need to update the API.
+        params.append('userId', userId) 
       }
 
       const response = await fetch(`/api/documents?${params.toString()}`)
@@ -94,51 +99,53 @@ export function DocumentLibrary() {
   )
 
   return (
-    <div className="h-full flex flex-col bg-gray-900">
+    <div className="h-full flex flex-col bg-[#0f0f0f]">
       {/* Header */}
-      <div className="p-6 border-b border-gray-800">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-bold text-white">Document Library</h2>
-          <button
-            onClick={() => setIsUploadModalOpen(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors"
-          >
-            <Plus className="w-5 h-5" />
-            Upload
-          </button>
-        </div>
-
-        {/* Search & Filters */}
-        <div className="flex gap-3">
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search documents..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-500"
-            />
+      {!embedded && (
+        <div className="p-6 border-b border-white/10">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-2xl font-bold text-white">Document Library</h2>
+            <button
+              onClick={() => setIsUploadModalOpen(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-brand-accent hover:bg-brand-accent/80 text-white rounded-lg transition-colors"
+            >
+              <Plus className="w-5 h-5" />
+              Upload
+            </button>
           </div>
 
-          <select
-            value={scopeFilter}
-            onChange={(e) => setScopeFilter(e.target.value as any)}
-            className="px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-purple-500"
-          >
-            <option value="ALL">All Documents</option>
-            <option value="PERSONAL">Personal</option>
-            <option value="TEAM">Team</option>
-            <option value="COMPANY">Company</option>
-          </select>
+          {/* Search & Filters */}
+          <div className="flex gap-3">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search documents..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 bg-[#1a1a1a] border border-white/10 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-brand-accent"
+              />
+            </div>
+
+            <select
+              value={scopeFilter}
+              onChange={(e) => setScopeFilter(e.target.value as any)}
+              className="px-4 py-2 bg-[#1a1a1a] border border-white/10 rounded-lg text-white focus:outline-none focus:border-brand-accent"
+            >
+              <option value="ALL">All Documents</option>
+              <option value="PERSONAL">Personal</option>
+              <option value="TEAM">Team</option>
+              <option value="COMPANY">Company</option>
+            </select>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Document Grid */}
       <div className="flex-1 overflow-y-auto p-6">
         {isLoading ? (
           <div className="flex items-center justify-center h-full">
-            <Loader2 className="w-8 h-8 text-purple-500 animate-spin" />
+            <Loader2 className="w-8 h-8 text-brand-accent animate-spin" />
           </div>
         ) : filteredDocuments.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center">
@@ -154,7 +161,7 @@ export function DocumentLibrary() {
             {!searchQuery && (
               <button
                 onClick={() => setIsUploadModalOpen(true)}
-                className="flex items-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors"
+                className="flex items-center gap-2 px-6 py-3 bg-brand-accent hover:bg-brand-accent/80 text-white rounded-lg transition-colors"
               >
                 <Plus className="w-5 h-5" />
                 Upload Your First Document

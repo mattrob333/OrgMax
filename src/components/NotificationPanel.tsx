@@ -30,7 +30,7 @@ const getNotificationColor = (type: string) => {
     case 'MEETING_BOOKED':
       return 'text-blue-400'
     case 'CALENDAR_UPDATED':
-      return 'text-purple-400'
+      return 'text-brand-accent'
     default:
       return 'text-gray-400'
   }
@@ -75,7 +75,7 @@ const NotificationItem = ({ notification, onMarkRead, onChatOpen }: Notification
   return (
     <div 
       className={`p-4 border-b border-gray-700/50 hover:bg-gray-800/50 cursor-pointer transition-colors ${
-        !notification.isRead ? 'bg-purple-900/10 border-l-4 border-l-purple-500' : ''
+        !notification.isRead ? 'bg-black/60 border-l-4 border-l-brand-accent' : ''
       }`}
       onClick={handleClick}
     >
@@ -203,7 +203,7 @@ export function NotificationPanel() {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: -10, scale: 0.95 }}
           transition={{ duration: 0.2, ease: "easeOut" }}
-          className="absolute top-14 right-0 w-96 bg-gray-900 border border-gray-700/50 rounded-lg shadow-2xl shadow-purple-900/10 z-50"
+          className="absolute top-14 right-0 w-96 bg-gray-900 border border-gray-700/50 rounded-lg shadow-2xl shadow-black/60 z-50"
         >
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b border-gray-700/50">
@@ -212,7 +212,7 @@ export function NotificationPanel() {
               {notifications.some(n => !n.isRead) && (
                 <button
                   onClick={markAllAsRead}
-                  className="text-xs text-purple-400 hover:text-purple-300 transition-colors"
+                  className="text-xs text-brand-accent hover:text-brand-accent transition-colors"
                 >
                   Mark all read
                 </button>

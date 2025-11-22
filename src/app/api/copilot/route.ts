@@ -1,8 +1,11 @@
 import { auth } from '@clerk/nextjs/server'
 import { streamText } from 'ai'
-import { openai } from '@ai-sdk/openai'
+import { createOpenAI } from '@ai-sdk/openai'
 import { z } from 'zod'
 import { db } from '@/lib/db'
+
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
 import {
   extractActionItems,
   parseTranscript,
@@ -11,7 +14,15 @@ import {
   extractEntities,
 } from '@/lib/ai-tools/document-analyzer'
 
-const MAX_DOCUMENT_CONTEXT_CHARS = 20000
+// Initialize xAI client (Grok) using OpenAI compatibility layer
+// This avoids needing the @ai-sdk/xai package if it's not installing correctly
+const xai = createOpenAI({
+  name: 'xai',
+  baseURL: 'https://api.x.ai/v1',
+  apiKey: process.env.XAI_API_KEY,
+})
+
+const MAX_DOCUMENT_CONTEXT_CHARS = 500000 // Increased for Grok's 2M context
 const MAX_GENERATION_TOKENS = 3500
 
 const formatDocumentForPrompt = (content: unknown) => {
@@ -33,7 +44,13 @@ export async function POST(req: Request) {
   const user = await db.user.findUnique({ where: { clerkId: userId } })
   if (!user) return new Response('User not found', { status: 404 })
 
-  const { messages, activeTask, attachedDocuments } = await req.json()
+  const { messages = [], activeTask, attachedDocuments } = await req.json()
+
+  console.log('[Copilot API] Payload received', {
+    userId,
+    messageCount: messages.length,
+    lastMessagePreview: messages[messages.length - 1]?.content?.slice(0, 120),
+  })
 
   // Get all employees for org chart context
   const allEmployees = await db.user.findMany({
@@ -73,7 +90,7 @@ export async function POST(req: Request) {
   let systemPrompt = `You are an intelligent AI copilot assistant helping ${user.firstName} ${user.lastName} with their work.
 
 Your capabilities:
-- Search the internet for up-to-date information
+- Search the internet for up-to-date information (for external companies, news, general knowledge)
 - Help with task planning and execution
 - Provide research assistance
 - Answer questions and solve problems
@@ -82,6 +99,10 @@ Your capabilities:
 - Access meeting transcripts from Fireflies AI
 - Sync recent meetings and create tasks from action items
 - Match meeting speakers to team members
+
+**IMPORTANT: When users ask about Fireflies transcripts, recent meetings, or want to see meeting summaries, you MUST use the getLastMeeting tool to fetch the data before responding.**
+
+**IMPORTANT: For external queries (e.g., "find IT companies", "search for news"), use your native search capabilities. DO NOT use the searchTeamMembers tool unless the user is specifically looking for an internal employee.**
 
 Always be helpful, concise, and professional.
 
@@ -116,46 +137,33 @@ The user is currently working on this task. Provide specific, actionable help re
   // Alternative: Could use Perplexity's sonar model with built-in internet search
   // by adding @ai-sdk/perplexity package and using: createPerplexity()('sonar')
   try {
+    console.log('Starting Copilot request...')
+    console.log('User message count:', messages.length)
+    console.log('Last message:', messages[messages.length - 1]?.content?.substring(0, 100))
+
+    const apiKey = process.env.XAI_API_KEY
+    if (!apiKey) {
+      console.error('XAI_API_KEY is missing from environment variables')
+      return new Response(JSON.stringify({ error: 'Server configuration error: Missing API Key' }), { status: 500 })
+    }
+    console.log('XAI_API_KEY is present (length: ' + apiKey.length + ')')
+
     const result = await streamText({
-      model: openai('gpt-4o'),
+      model: xai('grok-4-1-fast-non-reasoning'),
       system: systemPrompt,
       messages,
-      tools: {
-      searchWeb: {
-        description: 'Search the internet for current information, news, research, or answers to questions',
-        parameters: z.object({
-          query: z.string().describe('The search query'),
-        }),
-        execute: async ({ query }) => {
-          try {
-            // Use Exa MCP server for web search
-            const searchUrl = `http://localhost:3000/mcp/exa/search?q=${encodeURIComponent(query)}`
-            const response = await fetch(searchUrl)
-
-            if (!response.ok) {
-              return { error: 'Search failed', results: [] }
-            }
-
-            const data = await response.json()
-
-            // Format results for the AI
-            const formattedResults = data.results?.slice(0, 5).map((result: any) => ({
-              title: result.title,
-              url: result.url,
-              snippet: result.snippet || result.text?.substring(0, 200),
-            })) || []
-
-            return {
-              query,
-              results: formattedResults,
-              summary: `Found ${formattedResults.length} results for "${query}"`,
-            }
-          } catch (error) {
-            console.error('Web search error:', error)
-            return { error: 'Search service unavailable', results: [] }
-          }
+      providerOptions: {
+        xai: {
+          searchParameters: {
+            mode: 'auto',
+          },
         },
       },
+      onFinish: (event) => {
+        console.log('Stream finished:', event.finishReason)
+        if (event.warnings) console.warn('Stream warnings:', event.warnings)
+      },
+      tools: {
       updateTaskStatus: {
         description: 'Update the status of a task',
         parameters: z.object({
@@ -465,26 +473,48 @@ The user is currently working on this task. Provide specific, actionable help re
         },
       },
       getLastMeeting: {
-        description: 'Get the most recent meeting transcript from Fireflies AI',
+        description: 'Get the most recent meeting transcript from Fireflies AI. Use this tool when the user asks about: recent meetings, last meeting, Fireflies transcript, meeting summary, meeting notes, or wants to see what was discussed in their latest meeting. This tool retrieves the full transcript with speakers, action items, and summary. After calling this tool, present the meeting information in a clear, organized format with: 1) Meeting title and date, 2) List of participants/speakers, 3) Executive summary, 4) Action items (formatted as a bulleted list), 5) Key topics/keywords discussed.',
         parameters: z.object({}),
         execute: async () => {
+          console.log('[getLastMeeting] Starting fetch for user:', userId)
           try {
             const { getLastMeeting } = await import('@/lib/fireflies/service')
 
             const meeting = await getLastMeeting(userId)
+            console.log('[getLastMeeting] Fetch result:', meeting ? 'Found meeting' : 'No meeting found')
 
             if (!meeting) {
-              return { success: false, error: 'No meetings found' }
+              return { success: false, error: 'No meetings found. Please ensure you have recorded meetings in Fireflies.' }
             }
 
-            const transcriptText = meeting.sentences
-              ?.map(sentence => {
-                const speaker = sentence.speaker_name || meeting.speakers.find(s => s.id === sentence.speaker_id)?.name
-                const prefix = speaker ? `${speaker}: ` : ''
-                return `${prefix}${sentence.text}`.trim()
-              })
-              .filter(Boolean)
-              .join('\n')
+            // Limit transcript length
+            const MAX_TRANSCRIPT_CHARS = 500000 // 2M context support
+            let transcriptText = ''
+
+            if (meeting.sentences && Array.isArray(meeting.sentences) && meeting.sentences.length > 0) {
+              transcriptText = meeting.sentences
+                .map(sentence => {
+                  const speaker = sentence.speaker_name || meeting.speakers.find(s => s.id === sentence.speaker_id)?.name
+                  const prefix = speaker ? `${speaker}: ` : ''
+                  return `${prefix}${sentence.text}`.trim()
+                })
+                .filter(Boolean)
+                .join('\n')
+
+              console.log('[getLastMeeting] Transcript length:', transcriptText.length)
+            } else {
+              console.log('[getLastMeeting] No sentences found in transcript')
+              transcriptText = 'Transcript content not available. Only summary and metadata available.'
+            }
+
+            if (transcriptText.length > MAX_TRANSCRIPT_CHARS) {
+              transcriptText = transcriptText.slice(0, MAX_TRANSCRIPT_CHARS) + '\n...[TRUNCATED]'
+            }
+
+            // Format action items for better display
+            const actionItemsList = meeting.summary?.action_items
+              ? meeting.summary.action_items.split('\n').filter(line => line.trim().length > 0)
+              : []
 
             return {
               success: true,
@@ -493,18 +523,22 @@ The user is currently working on this task. Provide specific, actionable help re
                 title: meeting.title,
                 date: new Date(parseInt(meeting.date)).toLocaleString(),
                 duration: `${meeting.duration} minutes`,
-                speakers: meeting.speakers.map(s => s.name),
-                summary: meeting.summary?.overview,
-                actionItems: meeting.summary?.action_items,
-                keywords: meeting.summary?.keywords,
+                speakers: meeting.speakers.map(s => s.name).join(', '),
+                summary: meeting.summary?.overview || 'No summary available',
+                actionItems: actionItemsList.length > 0 ? actionItemsList : ['No action items found'],
+                keywords: meeting.summary?.keywords?.join(', ') || 'No keywords',
                 transcriptUrl: meeting.transcript_url,
                 transcriptText,
               },
-              message: `Retrieved last meeting: ${meeting.title}`,
+              message: `Successfully retrieved meeting: "${meeting.title}" from ${new Date(parseInt(meeting.date)).toLocaleDateString()}`,
             }
-          } catch (error) {
-            console.error('Get last meeting error:', error)
-            return { success: false, error: 'Failed to fetch last meeting from Fireflies' }
+          } catch (error: any) {
+            console.error('[getLastMeeting] Critical error:', error)
+            // Return a user-friendly error message
+            if (error.message?.includes('Fireflies not connected')) {
+               return { success: false, error: 'Fireflies is not connected. Please go to Settings and add your API Key.' }
+            }
+            return { success: false, error: `Failed to fetch meeting: ${error.message}` }
           }
         },
       },

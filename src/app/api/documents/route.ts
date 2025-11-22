@@ -20,6 +20,7 @@ export async function GET(req: NextRequest) {
     const scope = searchParams.get('scope')
     const category = searchParams.get('category')
     const search = searchParams.get('search')
+    const targetUserId = searchParams.get('userId')
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '20')
 
@@ -40,6 +41,9 @@ export async function GET(req: NextRequest) {
     }
 
     // Apply filters
+    if (targetUserId) {
+      where.userId = targetUserId
+    }
     if (scope) {
       where.scope = scope
     }

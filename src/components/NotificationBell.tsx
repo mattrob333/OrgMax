@@ -4,16 +4,24 @@ import { useEffect } from 'react'
 import { Bell } from 'lucide-react'
 import { useAppStore } from '@/lib/store'
 import { NotificationWithChat } from '@/types'
+import { useAuth } from '@clerk/nextjs'
 
 export function NotificationBell() {
-  const { 
-    unreadCount, 
-    isNotificationPanelOpen, 
+  const {
+    unreadCount,
+    isNotificationPanelOpen,
     setIsNotificationPanelOpen,
     setNotifications
   } = useAppStore()
 
+  const { isLoaded, isSignedIn } = useAuth()
+
   useEffect(() => {
+    // Don't fetch if auth isn't loaded or user isn't signed in
+    if (!isLoaded || !isSignedIn) {
+      return
+    }
+
     // Fetch notifications on component mount
     const fetchNotifications = async () => {
       try {
@@ -21,8 +29,8 @@ export function NotificationBell() {
         if (response.ok) {
           const data = await response.json()
           setNotifications(data.notifications)
-        } else {
-          // Handle non-ok responses (401, 403, 500, etc.)
+        } else if (response.status !== 401) {
+          // Only log non-401 errors (401 is expected when not authenticated)
           console.error('Failed to fetch notifications: HTTP', response.status)
         }
       } catch (error) {
@@ -36,7 +44,7 @@ export function NotificationBell() {
     // Set up polling for new notifications every 30 seconds
     const interval = setInterval(fetchNotifications, 30000)
     return () => clearInterval(interval)
-  }, [setNotifications])
+  }, [setNotifications, isLoaded, isSignedIn])
 
   return (
     <button

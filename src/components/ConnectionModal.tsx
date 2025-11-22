@@ -95,7 +95,7 @@ export function ConnectionModal({
             placeholder="Search for manager..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            className="w-full pl-10 pr-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-accent focus:border-transparent"
           />
         </div>
 
@@ -111,10 +111,10 @@ export function ConnectionModal({
                 key={manager.id}
                 onClick={() => handleConnect(manager.id)}
                 disabled={isConnecting}
-                className="w-full p-3 bg-gray-700/50 hover:bg-gray-700 rounded-lg border border-gray-600 hover:border-purple-500/50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full p-3 bg-gray-700/50 hover:bg-gray-700 rounded-lg border border-gray-600 hover:border-[var(--orb-purple)]/50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <div className="flex items-center gap-3">
-                  <div className="relative w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center overflow-hidden">
+                  <div className="relative w-10 h-10 rounded-full bg-gradient-to-br from-brand-accent to-[#A8D622] flex items-center justify-center overflow-hidden">
                     {manager.imageUrl ? (
                       <Image
                         src={manager.imageUrl}
@@ -166,7 +166,7 @@ export function ConnectionModal({
 
         {isConnecting && (
           <div className="mt-4 flex items-center justify-center">
-            <div className="w-6 h-6 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
+            <div className="w-6 h-6 border-2 border-brand-accent border-t-transparent rounded-full animate-spin" />
             <span className="ml-2 text-gray-400">Connecting...</span>
           </div>
         )}

@@ -27,8 +27,12 @@ function decrypt(text: string): string {
 
 /**
  * Get user's decrypted Fireflies API key from database
+ * Falls back to global API key if user hasn't configured their own
  */
 async function getUserFirefliesApiKey(userId: string): Promise<string> {
+  // Check for global API key first (for development/testing)
+  const globalApiKey = process.env.FIREFLIES_API_KEY
+
   const user = await db.user.findUnique({
     where: { clerkId: userId },
     select: {
@@ -37,11 +41,19 @@ async function getUserFirefliesApiKey(userId: string): Promise<string> {
     },
   })
 
-  if (!user || !user.firefliesConnected || !user.firefliesApiKey) {
-    throw new Error('Fireflies not connected. Please add your API key in Settings.')
+  // If user has their own API key configured, use it
+  if (user?.firefliesConnected && user?.firefliesApiKey) {
+    return decrypt(user.firefliesApiKey)
   }
 
-  return decrypt(user.firefliesApiKey)
+  // Fall back to global API key if available
+  if (globalApiKey) {
+    console.log('[Fireflies Service] Using global API key (user has not configured personal key)')
+    return globalApiKey
+  }
+
+  // No API key available
+  throw new Error('Fireflies not connected. Please add your API key in Settings or configure FIREFLIES_API_KEY environment variable.')
 }
 
 /**
@@ -49,23 +61,75 @@ async function getUserFirefliesApiKey(userId: string): Promise<string> {
  * @param userId - Clerk user ID to get Fireflies API key for
  */
 export async function getLastMeeting(userId: string): Promise<FirefliesTranscript | null> {
-  try {
-    const apiKey = await getUserFirefliesApiKey(userId)
-    const client = createFirefliesClient(apiKey)
+  console.log('[Fireflies Service] getLastMeeting called for userId:', userId)
 
+  try {
+    // Step 1: Get and decrypt API key
+    console.log('[Fireflies Service] Retrieving API key from database...')
+    const apiKey = await getUserFirefliesApiKey(userId)
+    console.log('[Fireflies Service] API key retrieved and decrypted successfully')
+
+    // Step 2: Create Fireflies client
+    const client = createFirefliesClient(apiKey)
+    console.log('[Fireflies Service] Fireflies client created')
+
+    // Step 3: Make API request
+    console.log('[Fireflies Service] Requesting transcripts from Fireflies API...')
     const data = await client.request<GetTranscriptsResponse>(
       GET_RECENT_TRANSCRIPTS,
       { limit: 1 }
     )
+    console.log('[Fireflies Service] API request completed')
 
-    if (!data.transcripts || data.transcripts.length === 0) {
+    // Step 4: Validate response
+    if (!data) {
+      console.error('[Fireflies Service] No data returned from API')
+      throw new Error('Empty response from Fireflies API')
+    }
+
+    if (!data.transcripts) {
+      console.error('[Fireflies Service] No transcripts array in response:', JSON.stringify(data))
+      throw new Error('Invalid response format from Fireflies API')
+    }
+
+    if (data.transcripts.length === 0) {
+      console.log('[Fireflies Service] No meetings found in Fireflies account')
       return null
     }
 
-    return data.transcripts[0]
-  } catch (error) {
-    console.error('[Fireflies Service] Error fetching last meeting:', error)
-    throw new Error('Failed to fetch meeting from Fireflies')
+    const meeting = data.transcripts[0]
+    console.log('[Fireflies Service] Meeting retrieved:', {
+      id: meeting.id,
+      title: meeting.title,
+      date: meeting.date,
+      hasSentences: !!meeting.sentences,
+      sentenceCount: meeting.sentences?.length || 0
+    })
+
+    return meeting
+  } catch (error: any) {
+    // Enhanced error handling with specific cases
+    console.error('[Fireflies Service] Error in getLastMeeting:', {
+      error: error.message,
+      stack: error.stack,
+      userId
+    })
+
+    // Check for specific error types
+    if (error.message?.includes('Fireflies not connected')) {
+      throw error // Pass through the specific error
+    }
+
+    if (error.message?.includes('API key')) {
+      throw new Error('Invalid or missing Fireflies API key. Please check your Settings.')
+    }
+
+    if (error.code === 'ENOTFOUND' || error.code === 'ECONNREFUSED') {
+      throw new Error('Unable to connect to Fireflies API. Please check your internet connection.')
+    }
+
+    // Generic error
+    throw new Error(`Failed to fetch meeting from Fireflies: ${error.message}`)
   }
 }
 

@@ -107,17 +107,17 @@ export function EmployeeNode({ data }: EmployeeNodeProps) {
   const initials = getInitials(user.firstName || undefined, user.lastName || undefined)
 
   // Node styling classes based on admin and connection status
-  const borderClass = isAdmin 
-    ? 'border-yellow-500/70 hover:border-yellow-400' 
-    : isUnconnected 
-      ? 'border-orange-500/70 hover:border-orange-400' 
-      : 'border-neutral-700 hover:border-purple-500/50'
-  
-  const shadowClass = isAdmin 
-    ? 'shadow-yellow-500/20 hover:shadow-yellow-500/40' 
-    : isUnconnected 
-      ? 'shadow-orange-500/20 hover:shadow-orange-500/40' 
-      : 'hover:shadow-purple-500/20'
+  const borderClass = isAdmin
+    ? 'border-yellow-500/70 hover:border-yellow-400'
+    : isUnconnected
+      ? 'border-orange-500/70 hover:border-orange-400'
+      : 'border-neutral-700 hover:border-[var(--orb-purple)]/50'
+
+  const shadowClass = isAdmin
+    ? 'shadow-yellow-500/20 hover:shadow-yellow-500/40'
+    : isUnconnected
+      ? 'shadow-orange-500/20 hover:shadow-orange-500/40'
+      : 'hover:shadow-[var(--orb-glow)]'
       
   const glowClass = isAdmin ? 'admin-glow' : isUnconnected ? 'unconnected-glow' : 'orb-glow'
 
@@ -128,7 +128,7 @@ export function EmployeeNode({ data }: EmployeeNodeProps) {
     >
       <Handle type="target" position={Position.Top} className="opacity-0" />
       
-      <div className={`bg-gray-800/80 backdrop-blur-sm border rounded-xl p-4 shadow-lg transition-all duration-300 w-[300px] ${borderClass} ${shadowClass} ${glowClass} group-hover:shadow-lg`}>
+      <div className={`bg-[#1a1a1a] backdrop-blur-sm border rounded-xl p-4 shadow-lg transition-all duration-300 w-[300px] ${borderClass} ${shadowClass} ${glowClass} group-hover:shadow-lg`}>
         {/* Admin Badge */}
         {isAdmin && (
           <div className="absolute -top-2 -right-2 z-10">
@@ -187,10 +187,10 @@ export function EmployeeNode({ data }: EmployeeNodeProps) {
           <div className="absolute -bottom-2 -right-2 z-10" title={isUnconnected ? "Connect to Manager" : "Change Manager"}>
             <button
               onClick={handleConnectClick}
-              className={`${isUnconnected 
-                ? 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700' 
-                : 'bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700'
-              } text-white p-2 rounded-full shadow-lg transition-all duration-200 hover:scale-110`}
+              className={`${isUnconnected
+                ? 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700'
+                : 'bg-gradient-to-r from-brand-accent to-[#A8D622] hover:from-[#A8D622] hover:to-brand-accent'
+              } text-slate-950 font-semibold p-2 rounded-full shadow-lg transition-all duration-200 hover:scale-110`}
             >
               <Link className="w-5 h-5" />
             </button>
@@ -246,7 +246,7 @@ export function EmployeeNode({ data }: EmployeeNodeProps) {
 
         {/* Avatar */}
         <div className="flex justify-center mb-3">
-          <div className={`relative w-16 h-16 rounded-full overflow-hidden ${isAdmin ? 'bg-gradient-to-br from-yellow-500 to-orange-500' : 'bg-gradient-to-br from-purple-500 to-pink-500'} flex items-center justify-center`}>
+          <div className={`relative w-16 h-16 rounded-full overflow-hidden ${isAdmin ? 'bg-gradient-to-br from-yellow-500 to-orange-500' : 'bg-gradient-to-br from-brand-accent to-[#A8D622]'} flex items-center justify-center`}>
             {user.imageUrl ? (
               <Image
                 src={user.imageUrl}
@@ -265,11 +265,11 @@ export function EmployeeNode({ data }: EmployeeNodeProps) {
 
         {/* User Info */}
         <div className="text-center">
-          <h3 className={`font-bold text-sm mb-1 transition-colors ${isAdmin ? 'text-yellow-100 group-hover:text-yellow-200' : 'text-white group-hover:text-purple-300'}`}>
+          <h3 className={`font-bold text-sm mb-1 transition-colors ${isAdmin ? 'text-yellow-100 group-hover:text-yellow-200' : 'text-white group-hover:text-brand-accent'}`}>
             {displayName}
           </h3>
           {user.title && (
-            <p className={`text-xs mb-1 font-medium ${isAdmin ? 'text-yellow-400' : 'text-purple-400'}`}>
+            <p className={`text-xs mb-1 font-medium ${isAdmin ? 'text-yellow-400' : 'text-brand-accent'}`}>
               {user.title}
             </p>
           )}
@@ -286,7 +286,7 @@ export function EmployeeNode({ data }: EmployeeNodeProps) {
         </div>
 
         {/* Hover overlay */}
-        <div className={`absolute inset-0 rounded-xl transition-all duration-300 pointer-events-none ${isAdmin ? 'bg-gradient-to-br from-yellow-500/0 to-orange-500/0 group-hover:from-yellow-500/10 group-hover:to-orange-500/10' : 'bg-gradient-to-br from-purple-500/0 to-pink-500/0 group-hover:from-purple-500/10 group-hover:to-pink-500/10'}`}></div>
+        <div className={`absolute inset-0 rounded-xl transition-all duration-300 pointer-events-none ${isAdmin ? 'bg-gradient-to-br from-yellow-500/0 to-orange-500/0 group-hover:from-yellow-500/10 group-hover:to-orange-500/10' : 'bg-gradient-to-br from-[var(--orb-purple)]/0 to-[#A8D622]/0 group-hover:from-[var(--orb-purple)]/10 group-hover:to-[#A8D622]/10'}`}></div>
       </div>
 
       <Handle type="source" position={Position.Bottom} className="opacity-0" />

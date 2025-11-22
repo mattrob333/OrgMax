@@ -282,7 +282,7 @@ function createEdge(sourceId: string, targetId: string): Edge {
     target: targetId,
     type: 'smoothstep',
     style: {
-      stroke: '#8b5cf6',
+      stroke: 'rgba(196, 248, 42, 0.65)',
       strokeWidth: 1.5,
     },
     animated: false,
